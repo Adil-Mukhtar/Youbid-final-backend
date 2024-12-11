@@ -45,13 +45,10 @@ public class AuthController {
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
         newUser.setFirstname(user.getFirstname());
         newUser.setLastname(user.getLastname());
-        newUser.setRole(user.getRole());
+        newUser.setRole("USER");
         newUser.setGender(user.getGender());
         newUser.setBalance(user.getBalance());
 
-        if(newUser.getRole().equals("")){
-            newUser.setRole("USER");
-        }
         User savedUser = userRepository.save(newUser);
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
 

@@ -1,5 +1,6 @@
 package com.youbid.fyp.service;
 
+import com.youbid.fyp.model.Product;
 import com.youbid.fyp.model.User;
 
 import java.util.List;

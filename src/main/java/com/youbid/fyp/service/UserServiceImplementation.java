@@ -78,7 +78,6 @@ public class UserServiceImplementation implements UserService {
             oldUser.setBalance(user.getBalance());
         }
 
-
         User updatedUser = userRepository.save(oldUser);
 
         return updatedUser;
@@ -96,4 +95,5 @@ public class UserServiceImplementation implements UserService {
             User user = userRepository.findByEmail(email);
             return user;
         }
+
 }

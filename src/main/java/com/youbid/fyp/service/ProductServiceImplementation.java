@@ -53,19 +53,11 @@ public class ProductServiceImplementation implements ProductService {
         newProduct.setName(product.getName());
         newProduct.setPrice(product.getPrice());
         newProduct.setDescription(product.getDescription());
-        newProduct.setStatus(product.getStatus());
+        newProduct.setStatus("pending");
         newProduct.setUser(user);
         newProduct.setCreatedAt(LocalDateTime.now()); // Current time from system
         newProduct.setLocation(product.getLocation());// Set the location
         newProduct.setCategory(product.getCategory());
-
-
-
-        //
-        // Assuming you retrieve the category by its ID
-        //Category category = product.getCategory(); // Ensure this is a Category object
-        //newProduct.setCategory(category); // Set the category
-        //
 
         return productRepository.save(newProduct);
     }
@@ -103,8 +95,11 @@ public class ProductServiceImplementation implements ProductService {
         if(product.getDescription() != null){
             oldProduct.setDescription(product.getDescription());
         }
-        if(product.getStatus() != null){
-            oldProduct.setStatus(product.getStatus());
+        if(product.getLocation() != null){
+            oldProduct.setLocation(product.getLocation());
+        }
+        if(product.getCategory() != null){
+            oldProduct.setCategory(product.getCategory());
         }
 
         Product updatedProduct = productRepository.save(oldProduct);
@@ -133,5 +128,40 @@ public class ProductServiceImplementation implements ProductService {
     public List<Product> findAllProducts() {
 
         return productRepository.findAll();
+    }
+
+
+    //for admin
+
+    @Override
+    public Product updateProductbyAdmin(Product product, Integer productId) throws Exception {
+
+        Product oldProduct = findProductById(productId);
+        if(oldProduct.getId() == null) {
+            throw new Exception("Product not found with id: " + product.getId());
+        }
+
+        if(product.getName() != null){
+            oldProduct.setName(product.getName());
+        }
+        if(product.getPrice() != null){
+            oldProduct.setPrice(product.getPrice());
+        }
+        if(product.getDescription() != null){
+            oldProduct.setDescription(product.getDescription());
+        }
+        if(product.getStatus() != null){
+            oldProduct.setStatus(product.getStatus());
+        }
+        if(product.getLocation() != null){
+            oldProduct.setLocation(product.getLocation());
+        }
+        if(product.getCategory() != null){
+            oldProduct.setCategory(product.getCategory());
+        }
+
+        Product updatedProduct = productRepository.save(oldProduct);
+
+        return updatedProduct;
     }
 }
