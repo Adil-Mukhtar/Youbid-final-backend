@@ -26,6 +26,10 @@ public class User {
     @ManyToMany
     private List<Product> product = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany
+    private List<Review> reviews = new ArrayList<>();
+
 
 
     private String role; //admin or normal user
@@ -36,16 +40,17 @@ public class User {
 
     }
 
-    public User(String role, List<Product> product, BigDecimal balance, String gender, String email, String password, String lastname, String firstname, Integer id) {
-        this.role = role;
-        this.product = product;
-        this.balance = balance;
-        this.gender = gender;
-        this.email = email;
-        this.password = password;
-        this.lastname = lastname;
-        this.firstname = firstname;
+    public User(Integer id, String firstname, String lastname, String password, String email, String gender, BigDecimal balance, List<Product> product, List<Review> reviews, String role) {
         this.id = id;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.password = password;
+        this.email = email;
+        this.gender = gender;
+        this.balance = balance;
+        this.product = product;
+        this.reviews = reviews;
+        this.role = role;
     }
 
     public Integer getId() {
@@ -118,5 +123,13 @@ public class User {
 
     public void setProduct(List<Product> product) {
         this.product = product;
+    }
+
+    public List<Review> getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(List<Review> reviews) {
+        this.reviews = reviews;
     }
 }

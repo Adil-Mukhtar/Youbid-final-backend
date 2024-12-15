@@ -2,7 +2,9 @@ package com.youbid.fyp.controller;
 
 
 import com.youbid.fyp.model.Product;
+import com.youbid.fyp.model.Review;
 import com.youbid.fyp.service.ProductService;
+import com.youbid.fyp.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +15,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/public")
 public class PublicController {
+
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ReviewService reviewService;
 
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProducts() {
@@ -43,6 +49,13 @@ public class PublicController {
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("reviews/SellerReviewsByProductID/{productId}")
+    public ResponseEntity<List<Review>> findSellerReviewsByProductId(@PathVariable Integer productId) throws Exception {
+
+        List<Review> reviews = reviewService.getSellerReviewsByProductId(productId);
+        return new ResponseEntity<List<Review>>(reviews, HttpStatus.OK);
     }
 
 }

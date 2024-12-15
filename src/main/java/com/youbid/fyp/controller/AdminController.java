@@ -3,11 +3,13 @@ package com.youbid.fyp.controller;
 
 
 import com.youbid.fyp.config.JwtProvider;
+import com.youbid.fyp.model.Review;
 import com.youbid.fyp.model.User;
 import com.youbid.fyp.model.Product;
 import com.youbid.fyp.repository.UserRepository;
 import com.youbid.fyp.response.ApiResponse;
 import com.youbid.fyp.response.AuthResponse;
+import com.youbid.fyp.service.ReviewService;
 import com.youbid.fyp.service.UserService;
 import com.youbid.fyp.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,9 @@ public class AdminController {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    ReviewService reviewService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
