@@ -6,6 +6,7 @@ import com.youbid.fyp.config.JwtProvider;
 import com.youbid.fyp.model.User;
 import com.youbid.fyp.model.Product;
 import com.youbid.fyp.repository.UserRepository;
+import com.youbid.fyp.response.ApiResponse;
 import com.youbid.fyp.response.AuthResponse;
 import com.youbid.fyp.service.UserService;
 import com.youbid.fyp.service.ProductService;
@@ -114,6 +115,15 @@ public class AdminController {
         Product productfound = productService.findProductById(productId);
         Product updatedProduct = productService.updateProductbyAdmin(product, productId);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/product/delete/{productId}")
+    public ResponseEntity<ApiResponse> deleteProduct(@PathVariable Integer productId) throws Exception {
+
+        String message = productService.deleteProductByAdmin(productId);
+        ApiResponse res = new ApiResponse();
+        res.setMessage(message);
+        return new ResponseEntity<ApiResponse>(res, HttpStatus.OK);
     }
 
 }

@@ -18,4 +18,8 @@ public interface ProductService {
     Product updateProduct(Product product, Integer userId, Integer productId) throws Exception;
 
     Product updateProductbyAdmin(Product product, Integer productId) throws Exception;
+
+    String deleteProductByAdmin(Integer productId) throws Exception;
+
+    List<Product> searchProducts(String query, String location, String category);
 }

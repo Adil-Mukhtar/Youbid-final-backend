@@ -164,4 +164,26 @@ public class ProductServiceImplementation implements ProductService {
 
         return updatedProduct;
     }
+
+    //for admin
+    @Override
+    public String deleteProductByAdmin(Integer productId) throws Exception {
+
+        Product product = findProductById(productId);
+        productRepository.delete(product);
+        return "Product deleted successfully!";
+    }
+
+    //for public to search products
+
+    @Override
+    public List<Product> searchProducts(String query, String location, String category) {
+        // Case 1: All filters are null
+        if (query == null && location == null && category == null) {
+            return productRepository.findAll();
+        }
+
+        // Case 2: Apply filtering conditions
+        return productRepository.searchProducts(query, location, category);
+    }
 }
