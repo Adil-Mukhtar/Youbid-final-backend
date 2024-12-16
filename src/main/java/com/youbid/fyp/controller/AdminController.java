@@ -3,12 +3,13 @@ package com.youbid.fyp.controller;
 
 
 import com.youbid.fyp.config.JwtProvider;
-import com.youbid.fyp.model.Review;
+import com.youbid.fyp.model.ProductStatus;
 import com.youbid.fyp.model.User;
 import com.youbid.fyp.model.Product;
 import com.youbid.fyp.repository.UserRepository;
 import com.youbid.fyp.response.ApiResponse;
 import com.youbid.fyp.response.AuthResponse;
+import com.youbid.fyp.service.ProductStatusService;
 import com.youbid.fyp.service.ReviewService;
 import com.youbid.fyp.service.UserService;
 import com.youbid.fyp.service.ProductService;
@@ -39,8 +40,9 @@ public class AdminController {
     @Autowired
     UserRepository userRepository;
 
+
     @Autowired
-    ReviewService reviewService;
+    ProductStatusService productStatusService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -129,6 +131,59 @@ public class AdminController {
         ApiResponse res = new ApiResponse();
         res.setMessage(message);
         return new ResponseEntity<ApiResponse>(res, HttpStatus.OK);
+    }
+
+    //register new admin
+    @PostMapping("/registerNewAdmin")
+    public AuthResponse registerNewAdmin(@RequestBody User user) throws Exception {
+        User isExist = userRepository.findByEmail(user.getEmail());
+
+        if (isExist != null) {
+            throw new Exception("Email already in use by another admin!");
+        }
+
+        User newUser = new User();
+
+        newUser.setEmail(user.getEmail());
+        newUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        newUser.setFirstname(user.getFirstname());
+        newUser.setLastname(user.getLastname());
+        newUser.setRole("ADMIN");
+        newUser.setGender(user.getGender());
+        newUser.setBalance(user.getBalance());
+
+        User savedUser = userRepository.save(newUser);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
+
+        String token = JwtProvider.generateToken(authentication, savedUser);
+        AuthResponse res = new AuthResponse(token, "New Admin Registered Successfully! :)", savedUser);
+
+        return res;
+    }
+
+
+    //for product status
+
+    @PutMapping("/productStatus/update")
+    public ResponseEntity<ProductStatus> updateProductStatus(@RequestBody ProductStatus productStatus) throws Exception {
+
+        ProductStatus foundProductStatus = productStatusService.getProductStatusById(1);
+        foundProductStatus = productStatusService.updateProductStatus(productStatus.getStatus());
+        return new ResponseEntity<>(foundProductStatus, HttpStatus.OK);
+    }
+
+    @PostMapping("/productStatus/create")
+    public ResponseEntity<ProductStatus> newProductStatus() throws Exception {
+
+        ProductStatus productStatus = new ProductStatus();
+        productStatus = productStatusService.createProductStatus();
+        return new ResponseEntity<>(productStatus, HttpStatus.OK);
+    }
+
+    @GetMapping("/productStatus")
+    public ResponseEntity<ProductStatus> getProductStatus() throws Exception {
+        ProductStatus productStatus = productStatusService.getProductStatusById(1);
+        return new ResponseEntity<>(productStatus, HttpStatus.OK);
     }
 
 }

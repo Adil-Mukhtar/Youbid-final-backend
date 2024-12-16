@@ -32,6 +32,7 @@ public class User {
 
 
 
+
     private String role; //admin or normal user
 
 

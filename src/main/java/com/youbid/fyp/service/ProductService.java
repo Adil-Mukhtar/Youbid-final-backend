@@ -22,4 +22,5 @@ public interface ProductService {
     String deleteProductByAdmin(Integer productId) throws Exception;
 
     List<Product> searchProducts(String query, String location, String category);
+
 }

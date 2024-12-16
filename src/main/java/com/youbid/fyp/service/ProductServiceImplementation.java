@@ -2,6 +2,7 @@ package com.youbid.fyp.service;
 
 
 import com.youbid.fyp.model.Product;
+import com.youbid.fyp.model.ProductStatus;
 import com.youbid.fyp.model.User;
 import com.youbid.fyp.repository.ProductRepository;
 import com.youbid.fyp.repository.UserRepository;
@@ -27,6 +28,9 @@ public class ProductServiceImplementation implements ProductService {
     @Autowired
     CategoryService categoryService;
 
+    @Autowired
+    ProductStatusService productStatusService;
+
     /*
     @Override
     public Product createProduct(Product product, Integer userId) throws Exception {
@@ -48,12 +52,14 @@ public class ProductServiceImplementation implements ProductService {
     @Override
     public Product createProduct(Product product, Integer userId) throws Exception {
 
+        ProductStatus productStatus = productStatusService.getProductStatusById(1);
+
         User user = userService.findUserById(userId);
         Product newProduct = new Product();
         newProduct.setName(product.getName());
         newProduct.setPrice(product.getPrice());
         newProduct.setDescription(product.getDescription());
-        newProduct.setStatus("pending");
+        newProduct.setStatus(productStatus.getStatus());
         newProduct.setUser(user);
         newProduct.setCreatedAt(LocalDateTime.now()); // Current time from system
         newProduct.setLocation(product.getLocation());// Set the location
@@ -187,4 +193,5 @@ public class ProductServiceImplementation implements ProductService {
         return productRepository.searchProducts(query, location, category);
     }
     //hello
+
 }
