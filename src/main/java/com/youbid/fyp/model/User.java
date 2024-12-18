@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,10 @@ public class User {
     private String email;
     private String gender;
     private BigDecimal balance;
+    private String cellphone;
+    private Boolean isBanned;
+    private Boolean isSuspended;
+    private LocalDateTime suspensionDate;
 
     @JsonIgnore
     @ManyToMany
@@ -41,7 +46,7 @@ public class User {
 
     }
 
-    public User(Integer id, String firstname, String lastname, String password, String email, String gender, BigDecimal balance, List<Product> product, List<Review> reviews, String role) {
+    public User(Integer id, String firstname, String lastname, String password, String email, String gender, BigDecimal balance, String cellphone, Boolean isBanned, Boolean isSuspended, LocalDateTime suspensionDate, List<Product> product, List<Review> reviews, String role) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
@@ -49,6 +54,10 @@ public class User {
         this.email = email;
         this.gender = gender;
         this.balance = balance;
+        this.cellphone = cellphone;
+        this.isBanned = isBanned;
+        this.isSuspended = isSuspended;
+        this.suspensionDate = suspensionDate;
         this.product = product;
         this.reviews = reviews;
         this.role = role;
@@ -132,5 +141,37 @@ public class User {
 
     public void setReviews(List<Review> reviews) {
         this.reviews = reviews;
+    }
+
+    public String getCellphone() {
+        return cellphone;
+    }
+
+    public void setCellphone(String cellphone) {
+        this.cellphone = cellphone;
+    }
+
+    public Boolean getBanned() {
+        return isBanned;
+    }
+
+    public void setBanned(Boolean banned) {
+        isBanned = banned;
+    }
+
+    public Boolean getSuspended() {
+        return isSuspended;
+    }
+
+    public void setSuspended(Boolean suspended) {
+        isSuspended = suspended;
+    }
+
+    public LocalDateTime getSuspensionDate() {
+        return suspensionDate;
+    }
+
+    public void setSuspensionDate(LocalDateTime suspensionDate) {
+        this.suspensionDate = suspensionDate;
     }
 }

@@ -8,6 +8,8 @@ import com.youbid.fyp.request.LoginRequest;
 import com.youbid.fyp.response.AuthResponse;
 import com.youbid.fyp.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/auth")
@@ -48,6 +52,10 @@ public class AuthController {
         newUser.setRole("USER");
         newUser.setGender(user.getGender());
         newUser.setBalance(user.getBalance());
+        newUser.setCellphone(user.getCellphone());
+        newUser.setSuspended(false);
+        newUser.setBanned(false);
+        newUser.setSuspensionDate(null);
 
         User savedUser = userRepository.save(newUser);
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
@@ -59,15 +67,38 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponse signin(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+    public ResponseEntity<?> signin(@RequestBody LoginRequest loginRequest) {
+        try {
+            Authentication authentication = authenticate(loginRequest.getEmail(), loginRequest.getPassword());
+            User user = userRepository.findByEmail(loginRequest.getEmail());
 
-        User user = userRepository.findByEmail(loginRequest.getEmail());
-        String token = JwtProvider.generateToken(authentication, user);
+            if (user.getBanned()) {
+                return ResponseEntity
+                        .status(HttpStatus.FORBIDDEN)
+                        .body("{\"message\": \"banned\"}");
+            }
 
-        AuthResponse res = new AuthResponse(token, "Login Successful!",user);
-        return res;
+            if (user.getSuspensionDate() != null && user.getSuspensionDate().isAfter(LocalDateTime.now())) {
+                return ResponseEntity
+                        .status(HttpStatus.LOCKED)
+                        .body("{\"message\": \"suspended\"}");
+            }
+
+            String token = JwtProvider.generateToken(authentication, user);
+
+            AuthResponse res = new AuthResponse(token, "Login Successful!", user);
+            return ResponseEntity.ok(res);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("{\"message\": \"Invalid email or password\"}");
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"message\": \"" + e.getMessage() + "\"}");
+        }
     }
+
 
 
     private Authentication authenticate(String email, String password){

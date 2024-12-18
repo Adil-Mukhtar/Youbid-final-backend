@@ -107,6 +107,10 @@ public class AdminController {
         newUser.setRole("ADMIN");
         newUser.setGender(user.getGender());
         newUser.setBalance(user.getBalance());
+        newUser.setCellphone(user.getCellphone());
+        newUser.setBanned(false);
+        newUser.setSuspended(false);
+        newUser.setSuspensionDate(null);
 
         User savedUser = userRepository.save(newUser);
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
@@ -151,6 +155,10 @@ public class AdminController {
         newUser.setRole("ADMIN");
         newUser.setGender(user.getGender());
         newUser.setBalance(user.getBalance());
+        newUser.setCellphone(user.getCellphone());
+        newUser.setBanned(false);
+        newUser.setSuspended(false);
+        newUser.setSuspensionDate(null);
 
         User savedUser = userRepository.save(newUser);
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());

@@ -17,6 +17,7 @@ public class UserServiceImplementation implements UserService {
     @Autowired
     UserRepository userRepository;
 
+    //we are not using this register function , this was for testing only
     @Override
     public User registerUser(User user) {
 
@@ -25,7 +26,7 @@ public class UserServiceImplementation implements UserService {
         newUser.setPassword(user.getPassword());
         newUser.setFirstname(user.getFirstname());
         newUser.setLastname(user.getLastname());
-        newUser.setRole(user.getRole()); //every user will be user, we will make seperate controller for admins later on
+        newUser.setRole(user.getRole());
         newUser.setBalance(user.getBalance());
         newUser.setGender(user.getGender());
 
@@ -76,6 +77,29 @@ public class UserServiceImplementation implements UserService {
         }
         if(user.getBalance() != null){
             oldUser.setBalance(user.getBalance());
+        }
+
+        if(user.getCellphone() != null){
+            oldUser.setCellphone(user.getCellphone());
+        }
+
+        if(user.getBanned() != null){
+            oldUser.setBanned(user.getBanned());
+        }
+
+        if(user.getSuspended() != null){
+            oldUser.setSuspended(user.getSuspended());
+        }
+
+        if(user.getSuspensionDate() != null){
+            if(user.getSuspended() == false)
+            {
+                oldUser.setSuspensionDate(null);
+            }
+            else {
+                oldUser.setSuspensionDate(user.getSuspensionDate());
+            }
+
         }
 
         User updatedUser = userRepository.save(oldUser);
