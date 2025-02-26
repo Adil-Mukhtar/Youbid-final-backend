@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/public")
@@ -51,11 +52,19 @@ public class PublicController {
         }
     }
 
-    @GetMapping("reviews/SellerReviewsByProductID/{productId}")
-    public ResponseEntity<List<Review>> findSellerReviewsByProductId(@PathVariable Integer productId) throws Exception {
-
-        List<Review> reviews = reviewService.getSellerReviewsByProductId(productId);
-        return new ResponseEntity<List<Review>>(reviews, HttpStatus.OK);
+    @GetMapping("/reviews/SellerReviewsWithSentiment/{productId}")
+    public ResponseEntity<Map<String, Object>> getSentimentAnalysisForProduct(@PathVariable Integer productId) {
+        try {
+            // Call the service to get sentiment analysis
+            Map<String, Object> sentimentAnalysis = reviewService.getSentimentAnalysisForReviews(productId);
+            return new ResponseEntity<>(sentimentAnalysis, HttpStatus.OK);
+        } catch (Exception e) {
+            // Return error response if something goes wrong
+            return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
+
+
 
 }

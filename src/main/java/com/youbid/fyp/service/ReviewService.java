@@ -3,6 +3,7 @@ package com.youbid.fyp.service;
 import com.youbid.fyp.model.Review;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ReviewService {
 
@@ -15,6 +16,8 @@ public interface ReviewService {
     List<Review> getSellerReviews(Integer sellerId) throws Exception;
 
     List<Review> getSellerReviewsByProductId(Integer productId) throws Exception;
+
+    Map<String, Object> getSentimentAnalysisForReviews(Integer productId) throws Exception;
 
 
 
