@@ -1,6 +1,7 @@
 package com.youbid.fyp.controller;
 
 
+import com.youbid.fyp.model.Product;
 import com.youbid.fyp.model.User;
 import com.youbid.fyp.repository.ProductRepository;
 import com.youbid.fyp.repository.UserRepository;
@@ -56,4 +57,9 @@ public class UserController {
         return user;
     }
 
+    @GetMapping("/api/user/wonItems")
+    public List<Product> getUserWonItems(@RequestHeader("Authorization") String jwt){
+        User user = userService.findUserByJwt(jwt);
+        return user.getWonItems();
+    }
 }

@@ -21,5 +21,8 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
                                  @Param("location") String location,
                                  @Param("category") String category);
 
+    //AFTER bidding won
+    @Query("SELECT p FROM Product p WHERE p.auctionDeadline < CURRENT_TIMESTAMP AND p.status = 'live'")
+    List<Product> findExpiredAuctions();
 
 }

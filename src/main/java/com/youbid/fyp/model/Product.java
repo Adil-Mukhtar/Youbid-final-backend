@@ -1,9 +1,12 @@
 package com.youbid.fyp.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -19,6 +22,16 @@ public class Product {
     private String category;
     private String location;
 
+    @Column(nullable = true)
+    private BigDecimal highestBid;
+
+    @ManyToOne
+    private User highestBidder;
+
+    @Column
+    private LocalDateTime auctionDeadline;
+    // =============
+
     @ManyToOne
     private User user;
 
@@ -28,15 +41,18 @@ public class Product {
 
     }
 
-    public Product(Integer id, String name, String description, Integer price, String status, User user, String location, String category, LocalDateTime createdAt) {
+    public Product(Integer id, String name, String description, Integer price, String status, String category, String location, List<Bid> bids, BigDecimal highestBid, User highestBidder, LocalDateTime auctionDeadline, User user, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.status = status;
-        this.user = user;
-        this.location = location;
         this.category = category;
+        this.location = location;
+        this.highestBid = highestBid;
+        this.highestBidder = highestBidder;
+        this.auctionDeadline = auctionDeadline;
+        this.user = user;
         this.createdAt = createdAt;
     }
 
@@ -110,5 +126,32 @@ public class Product {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+
+    //bids///
+
+    public BigDecimal getHighestBid() {
+        return highestBid;
+    }
+
+    public void setHighestBid(BigDecimal highestBid) {
+        this.highestBid = highestBid;
+    }
+
+    public User getHighestBidder() {
+        return highestBidder;
+    }
+
+    public void setHighestBidder(User highestBidder) {
+        this.highestBidder = highestBidder;
+    }
+
+    public LocalDateTime getAuctionDeadline() {
+        return auctionDeadline;
+    }
+
+    public void setAuctionDeadline(LocalDateTime auctionDeadline) {
+        this.auctionDeadline = auctionDeadline;
     }
 }

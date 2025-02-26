@@ -71,5 +71,17 @@ public class ProductController {
         return new ResponseEntity<List<Product>>(products, HttpStatus.OK);
     }
 
+//    @PostMapping("/products/close-auction/{productId}")
+//    public ResponseEntity<String> closeAuction(@PathVariable Integer productId) {
+//        try {
+//            productService.closeAuctionForProduct(productId);
+//            return ResponseEntity.ok("Auction closed successfully for product ID: " + productId);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body("Error closing auction: " + e.getMessage());
+//        }
+//    }
+
+
 
 }

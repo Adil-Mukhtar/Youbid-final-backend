@@ -35,18 +35,19 @@ public class User {
     @OneToMany
     private List<Review> reviews = new ArrayList<>();
 
-
-
+    @JsonIgnore
+    @ManyToMany
+    private List<Product> wonItems = new ArrayList<>();
 
     private String role; //admin or normal user
-
 
 
     public User() {
 
     }
 
-    public User(Integer id, String firstname, String lastname, String password, String email, String gender, BigDecimal balance, String cellphone, Boolean isBanned, Boolean isSuspended, LocalDateTime suspensionDate, List<Product> product, List<Review> reviews, String role) {
+
+    public User(Integer id, String firstname, String lastname, String password, String email, String gender, BigDecimal balance, String cellphone, Boolean isBanned, Boolean isSuspended, LocalDateTime suspensionDate, List<Product> product, List<Review> reviews, List<Product> wonItems, String role) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
@@ -60,6 +61,7 @@ public class User {
         this.suspensionDate = suspensionDate;
         this.product = product;
         this.reviews = reviews;
+        this.wonItems = wonItems;
         this.role = role;
     }
 
@@ -111,9 +113,7 @@ public class User {
         this.gender = gender;
     }
 
-    public BigDecimal getBalance() {
-        return balance;
-    }
+    public BigDecimal getBalance() { return balance;}
 
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
@@ -143,35 +143,24 @@ public class User {
         this.reviews = reviews;
     }
 
-    public String getCellphone() {
-        return cellphone;
-    }
+    public String getCellphone() {return cellphone;}
 
-    public void setCellphone(String cellphone) {
-        this.cellphone = cellphone;
-    }
+    public void setCellphone(String cellphone) {this.cellphone = cellphone;}
 
-    public Boolean getBanned() {
-        return isBanned;
-    }
+    public Boolean getBanned() {return isBanned;}
 
-    public void setBanned(Boolean banned) {
-        isBanned = banned;
-    }
+    public void setBanned(Boolean banned) {isBanned = banned;}
 
-    public Boolean getSuspended() {
-        return isSuspended;
-    }
+    public Boolean getSuspended() {return isSuspended;}
 
-    public void setSuspended(Boolean suspended) {
-        isSuspended = suspended;
-    }
+    public void setSuspended(Boolean suspended) {isSuspended = suspended;}
 
-    public LocalDateTime getSuspensionDate() {
-        return suspensionDate;
-    }
+    public LocalDateTime getSuspensionDate() {return suspensionDate;}
 
-    public void setSuspensionDate(LocalDateTime suspensionDate) {
-        this.suspensionDate = suspensionDate;
-    }
+    public void setSuspensionDate(LocalDateTime suspensionDate) {this.suspensionDate = suspensionDate;}
+
+    public List<Product> getWonItems() {return wonItems;}
+
+    public void setWonItems(List<Product> wonItems) {this.wonItems = wonItems;}
+
 }

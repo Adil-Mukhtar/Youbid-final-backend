@@ -1,9 +1,11 @@
 package com.youbid.fyp.service;
 
 
+import com.youbid.fyp.model.Bid;
 import com.youbid.fyp.model.Product;
 import com.youbid.fyp.model.ProductStatus;
 import com.youbid.fyp.model.User;
+import com.youbid.fyp.repository.BidRepository;
 import com.youbid.fyp.repository.ProductRepository;
 import com.youbid.fyp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,9 @@ public class ProductServiceImplementation implements ProductService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    BidRepository bidRepository;
 
     @Autowired
     CategoryService categoryService;
@@ -64,6 +69,7 @@ public class ProductServiceImplementation implements ProductService {
         newProduct.setCreatedAt(LocalDateTime.now()); // Current time from system
         newProduct.setLocation(product.getLocation());// Set the location
         newProduct.setCategory(product.getCategory());
+        newProduct.setAuctionDeadline(product.getAuctionDeadline());
 
         return productRepository.save(newProduct);
     }
@@ -106,6 +112,12 @@ public class ProductServiceImplementation implements ProductService {
         }
         if(product.getCategory() != null){
             oldProduct.setCategory(product.getCategory());
+        }
+        if(product.getStatus() != null && product.getStatus() != "live"){
+            oldProduct.setStatus(product.getStatus());
+        }
+        if(product.getAuctionDeadline() != null){
+            oldProduct.setAuctionDeadline(product.getAuctionDeadline());
         }
 
         Product updatedProduct = productRepository.save(oldProduct);
@@ -165,6 +177,9 @@ public class ProductServiceImplementation implements ProductService {
         if(product.getCategory() != null){
             oldProduct.setCategory(product.getCategory());
         }
+        if(product.getAuctionDeadline() != null){
+            oldProduct.setAuctionDeadline(product.getAuctionDeadline());
+        }
 
         Product updatedProduct = productRepository.save(oldProduct);
 
@@ -192,6 +207,52 @@ public class ProductServiceImplementation implements ProductService {
         // Case 2: Apply filtering conditions
         return productRepository.searchProducts(query, location, category);
     }
-    //hello
+
+
+//    //AFTER bidding won
+//    @Override
+//    public void closeAuctionForProduct(Integer productId) throws Exception {
+//        Product product = productRepository.findById(productId)
+//                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
+//
+//        // Ensure the product is eligible for closure
+//        if (!"live".equalsIgnoreCase(product.getStatus())) {
+//            throw new IllegalArgumentException("Product is not live and cannot be closed.");
+//        }
+//
+//        // Determine the highest bid
+//        Bid highestBid = bidRepository.findTopByProductOrderByAmountDesc(product)
+//                .orElse(null);
+//
+//        if (highestBid != null) {
+//            // Assign the product to the highest bidder and mark as sold
+//            product.setHighestBidder(highestBid.getBidder());
+//            product.setHighestBid(highestBid.getAmount());
+//            product.setStatus("sold");
+//        } else {
+//            // No bids placed, mark as expired
+//            product.setStatus("expired");
+//        }
+//
+//        // Save updated product
+//        productRepository.save(product);
+//    }
+//
+//    @Override
+//    public void processExpiredAuctions() {
+//        // Fetch all expired products with "live" status
+//        List<Product> expiredProducts = productRepository.findExpiredAuctions();
+//
+//        for (Product product : expiredProducts) {
+//            try {
+//                closeAuctionForProduct(product.getId());
+//            } catch (Exception e) {
+//                // Log any errors during auction closure
+//                System.err.println("Error closing auction for product ID: " + product.getId());
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+
 
 }

@@ -23,4 +23,10 @@ public interface ProductService {
 
     List<Product> searchProducts(String query, String location, String category);
 
+//    //AFTER bidding won
+//    void closeAuctionForProduct(Integer productId) throws Exception;
+//
+//    void processExpiredAuctions();
+
+
 }
