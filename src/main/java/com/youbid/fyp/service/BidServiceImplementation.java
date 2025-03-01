@@ -74,13 +74,23 @@ public class BidServiceImplementation implements BidService {
         return bid;
     }
 
+//    @Override
+//    public List<BidDTO> getBidHistory(Integer productId) throws Exception {
+//        Product product = productRepository.findById(productId).orElseThrow(() -> new Exception("Product not found"));
+//
+//        List<BidDTO> allBidsForProduct = bidRepository.findAllBidDetailsByProductIdOrderByBidAmountAscDTO(productId);
+//        return allBidsForProduct;
+//    }
+
     @Override
     public List<BidDTO> getBidHistory(Integer productId) throws Exception {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new Exception("Product not found"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new Exception("Product not found"));
 
-        List<BidDTO> allBidsForProduct = bidRepository.findAllBidDetailsByProductIdOrderByBidAmountAscDTO(productId);
-        return allBidsForProduct;
+        return bidRepository.findAllBidDetailsByProductIdOrderByBidAmountAscDTO(productId);
     }
+
+
 
     @Override
     public Optional<Bid> getHighestBidByProductId(Integer productId) {

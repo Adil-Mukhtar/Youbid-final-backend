@@ -197,17 +197,25 @@ public class ProductServiceImplementation implements ProductService {
 
     //for public to search products
 
+//    @Override
+//    public List<Product> searchProducts(String query, String location, String category) {
+//        // Case 1: All filters are null
+//        if (query == null && location == null && category == null) {
+//            return productRepository.findAll();
+//        }
+//
+//        // Case 2: Apply filtering conditions
+//        return productRepository.searchProducts(query, location, category);
+//    }
+
+
     @Override
-    public List<Product> searchProducts(String query, String location, String category) {
-        // Case 1: All filters are null
-        if (query == null && location == null && category == null) {
+    public List<Product> searchProducts(String query, String location, String category, Double minPrice, Double maxPrice) {
+        if (query == null && location == null && category == null && minPrice == null && maxPrice == null) {
             return productRepository.findAll();
         }
-
-        // Case 2: Apply filtering conditions
-        return productRepository.searchProducts(query, location, category);
+        return productRepository.searchProducts(query, location, category, minPrice, maxPrice);
     }
-
 
 //    //AFTER bidding won
 //    @Override

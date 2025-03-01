@@ -1,31 +1,30 @@
 package com.youbid.fyp.DTO;
 
-import com.youbid.fyp.model.User;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class BidDTO {
-    private User bidder;
+    private String bidderName; // ✅ Store only bidder's name
     private BigDecimal amount;
     private LocalDateTime bidPlaceTime;
 
     public BidDTO() {
         //
     }
-    public BidDTO(User bidder, BigDecimal amount, LocalDateTime bidPlaceTime) {
-        this.bidder = bidder;
+
+    public BidDTO(String bidderName, BigDecimal amount, LocalDateTime bidPlaceTime) {
+        this.bidderName = bidderName;
         this.amount = amount;
         this.bidPlaceTime = bidPlaceTime;
     }
 
     // Getters and setters
-    public User getBidder() {
-        return bidder;
+    public String getBidderName() {
+        return bidderName;
     }
 
-    public void setBidder(User bidder) {
-        this.bidder = bidder;
+    public void setBidderName(String bidderName) {
+        this.bidderName = bidderName;
     }
 
     public BigDecimal getAmount() {

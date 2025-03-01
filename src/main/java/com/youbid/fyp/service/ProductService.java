@@ -21,7 +21,9 @@ public interface ProductService {
 
     String deleteProductByAdmin(Integer productId) throws Exception;
 
-    List<Product> searchProducts(String query, String location, String category);
+//    List<Product> searchProducts(String query, String location, String category);
+
+    List<Product> searchProducts(String query, String location, String category, Double minPrice, Double maxPrice);
 
 //    //AFTER bidding won
 //    void closeAuctionForProduct(Integer productId) throws Exception;

@@ -39,13 +39,28 @@ public class PublicController {
         }
     }
 
+//    @GetMapping("/products/search")
+//    public ResponseEntity<List<Product>> searchProducts(
+//            @RequestParam(required = false) String query,
+//            @RequestParam(required = false) String location,
+//            @RequestParam(required = false) String category) {
+//        try {
+//            List<Product> products = productService.searchProducts(query, location, category);
+//            return new ResponseEntity<>(products, HttpStatus.OK);
+//        } catch (Exception e) {
+//            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
+
     @GetMapping("/products/search")
     public ResponseEntity<List<Product>> searchProducts(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) String category) {
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
         try {
-            List<Product> products = productService.searchProducts(query, location, category);
+            List<Product> products = productService.searchProducts(query, location, category, minPrice, maxPrice);
             return new ResponseEntity<>(products, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

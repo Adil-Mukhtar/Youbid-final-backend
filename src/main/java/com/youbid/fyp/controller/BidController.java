@@ -105,6 +105,7 @@ public class BidController {
         }
     }
 
+    //for testing purposes
     @GetMapping("/winners/process-all")
     public ResponseEntity<?> processAllAuctionWinners() {
         try {
