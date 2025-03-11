@@ -1,16 +1,17 @@
+// Chat.java
 package com.youbid.fyp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 public class Chat {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private Integer id;
 
     @ManyToOne
     private User user1;
@@ -20,9 +21,9 @@ public class Chat {
 
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<Message> messages;
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL)
+    @OrderBy("timestamp ASC")
+    private List<Message> messages = new ArrayList<>();
 
     public Chat() {
         this.createdAt = LocalDateTime.now();
@@ -34,12 +35,12 @@ public class Chat {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
-    public Long getId() {
+    // Getters and setters
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -73,5 +74,11 @@ public class Chat {
 
     public void setMessages(List<Message> messages) {
         this.messages = messages;
+    }
+
+    // Helper methods
+    public void addMessage(Message message) {
+        messages.add(message);
+        message.setChat(this);
     }
 }

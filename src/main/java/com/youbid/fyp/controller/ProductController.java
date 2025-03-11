@@ -1,6 +1,5 @@
 package com.youbid.fyp.controller;
 
-import com.youbid.fyp.enums.City;
 import com.youbid.fyp.model.Product;
 import com.youbid.fyp.model.User;
 import com.youbid.fyp.response.ApiResponse;

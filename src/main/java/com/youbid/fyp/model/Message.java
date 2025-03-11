@@ -1,3 +1,4 @@
+// Message.java
 package com.youbid.fyp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -5,56 +6,46 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "messages")
 public class Message {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private Integer id;
 
     @ManyToOne
-    @JsonIgnore
-    private Chat chat;
-
-    @ManyToOne
+    @JoinColumn(name = "sender_id")
     private User sender;
 
     @ManyToOne
-    private User receiver;
+    @JoinColumn(name = "chat_id")
+    @JsonIgnore
+    private Chat chat;
 
+    @Column(columnDefinition = "TEXT")
     private String content;
+
     private LocalDateTime timestamp;
-    private Boolean read;
+
+    private boolean isRead;
 
     public Message() {
         this.timestamp = LocalDateTime.now();
-        this.read = false;
+        this.isRead = false;
     }
 
-    public Message(Chat chat, User sender, String content, User receiver) {
-        this.chat = chat;
+    public Message(User sender, String content) {
         this.sender = sender;
-        this.receiver = receiver;
         this.content = content;
         this.timestamp = LocalDateTime.now();
-        this.read = false;
+        this.isRead = false;
     }
 
-    // Getters and Setters
-    public Long getId() {
+    // Getters and setters
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
-    }
-
-    public Chat getChat() {
-        return chat;
-    }
-
-    public void setChat(Chat chat) {
-        this.chat = chat;
     }
 
     public User getSender() {
@@ -63,6 +54,14 @@ public class Message {
 
     public void setSender(User sender) {
         this.sender = sender;
+    }
+
+    public Chat getChat() {
+        return chat;
+    }
+
+    public void setChat(Chat chat) {
+        this.chat = chat;
     }
 
     public String getContent() {
@@ -81,19 +80,11 @@ public class Message {
         this.timestamp = timestamp;
     }
 
-    public Boolean getRead() {
-        return read;
+    public boolean isRead() {
+        return isRead;
     }
 
-    public void setRead(Boolean read) {
-        this.read = read;
-    }
-
-    public User getReceiver() {
-        return receiver;
-    }
-
-    public void setReceiver(User receiver) {
-        this.receiver = receiver;
+    public void setRead(boolean read) {
+        isRead = read;
     }
 }

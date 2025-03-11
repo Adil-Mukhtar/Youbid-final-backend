@@ -31,4 +31,8 @@ public interface BidRepository extends JpaRepository<Bid, Integer> {
     @Query("SELECT b FROM Bid b WHERE b.product = :product ORDER BY b.amount DESC LIMIT 1")
     Optional<Bid> findTopByProductOrderByAmountDesc(@Param("product") com.youbid.fyp.model.Product product);
 
+    // Add this method to your BidRepository.java interface
+
+    List<Bid> findByBidder(User bidder);
+
 }

@@ -169,5 +169,29 @@ public class BidController {
         }
     }
 
+    // Add these methods to your existing BidController.java
+
+    @GetMapping("/api/bids/active")
+    public ResponseEntity<List<Bid>> getActiveBids(@RequestHeader("Authorization") String jwt) {
+        try {
+            User user = userService.findUserByJwt(jwt);
+            List<Bid> activeBids = bidService.getActiveBidsByUser(user.getId());
+            return new ResponseEntity<>(activeBids, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/api/bids/lost")
+    public ResponseEntity<List<Bid>> getLostBids(@RequestHeader("Authorization") String jwt) {
+        try {
+            User user = userService.findUserByJwt(jwt);
+            List<Bid> lostBids = bidService.getLostBidsByUser(user.getId());
+            return new ResponseEntity<>(lostBids, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 }

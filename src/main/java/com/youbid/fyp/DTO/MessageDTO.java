@@ -1,47 +1,84 @@
+// MessageDTO.java
 package com.youbid.fyp.DTO;
 
 import java.time.LocalDateTime;
 
 public class MessageDTO {
-    private Long id;
-    private UserDTO sender;
-    private UserDTO receiver;
+    private Integer id;
+    private Integer senderId;
+    private String senderName;
     private String content;
     private LocalDateTime timestamp;
-    private Boolean read;
+    private boolean isRead;
+    private boolean isMine;
 
-    public MessageDTO(Long id, UserDTO sender, UserDTO receiver, String content, LocalDateTime timestamp, Boolean read) {
-        this.id = id;
-        this.sender = sender;
-        this.receiver = receiver;
-        this.content = content;
-        this.timestamp = timestamp;
-        this.read = read;
+    public MessageDTO() {
     }
 
-    // Getters
-    public Long getId() {
+    public MessageDTO(Integer id, Integer senderId, String senderName, String content, LocalDateTime timestamp, boolean isRead, boolean isMine) {
+        this.id = id;
+        this.senderId = senderId;
+        this.senderName = senderName;
+        this.content = content;
+        this.timestamp = timestamp;
+        this.isRead = isRead;
+        this.isMine = isMine;
+    }
+
+    // Getters and setters
+    public Integer getId() {
         return id;
     }
 
-    public UserDTO getSender() {
-        return sender;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public UserDTO getReceiver() {
-        return receiver;
+    public Integer getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(Integer senderId) {
+        this.senderId = senderId;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
     }
 
     public String getContent() {
         return content;
     }
 
+    public void setContent(String content) {
+        this.content = content;
+    }
+
     public LocalDateTime getTimestamp() {
         return timestamp;
     }
 
-    public Boolean getRead() {
-        return read;
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public boolean isRead() {
+        return isRead;
+    }
+
+    public void setRead(boolean read) {
+        isRead = read;
+    }
+
+    public boolean isMine() {
+        return isMine;
+    }
+
+    public void setMine(boolean mine) {
+        isMine = mine;
     }
 }
-

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BidServiceImplementation implements BidService {
@@ -160,6 +161,45 @@ public class BidServiceImplementation implements BidService {
             System.err.println("❗ Error during scheduled auction processing: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    // Add these implementations to your BidServiceImplementation.java class
+
+    @Override
+    public List<Bid> getActiveBidsByUser(Integer userId) throws Exception {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User not found"));
+
+        List<Bid> allUserBids = bidRepository.findByBidder(user);
+
+        // Filter bids where the auction is still active
+        return allUserBids.stream()
+                .filter(bid -> {
+                    Product product = bid.getProduct();
+                    return product.getAuctionDeadline().isAfter(LocalDateTime.now()) &&
+                            !"sold".equalsIgnoreCase(product.getStatus()) &&
+                            !"expired".equalsIgnoreCase(product.getStatus());
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Bid> getLostBidsByUser(Integer userId) throws Exception {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new Exception("User not found"));
+
+        List<Bid> allUserBids = bidRepository.findByBidder(user);
+
+        // Filter bids where the auction has ended and the user was not the highest bidder
+        return allUserBids.stream()
+                .filter(bid -> {
+                    Product product = bid.getProduct();
+                    return (product.getAuctionDeadline().isBefore(LocalDateTime.now()) ||
+                            "sold".equalsIgnoreCase(product.getStatus())) &&
+                            (product.getHighestBidder() == null ||
+                                    !product.getHighestBidder().getId().equals(userId));
+                })
+                .collect(Collectors.toList());
     }
 
 

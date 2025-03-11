@@ -15,4 +15,6 @@ public interface BidService {
     //void processExpiredAuctions() throws Exception;
     void processAllAuctionWinnersScheduled();
     Optional<Bid> getHighestBidByProductId(Integer productId);
+    List<Bid> getActiveBidsByUser(Integer userId) throws Exception;
+    List<Bid> getLostBidsByUser(Integer userId) throws Exception;
 }
