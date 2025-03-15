@@ -27,6 +27,9 @@ public class ChatServiceImplementation implements ChatService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     public List<Chat> getUserChats(Integer userId) {
         User user = userRepository.findById(userId)
@@ -86,7 +89,18 @@ public class ChatServiceImplementation implements ChatService {
         Message message = new Message(sender, content);
         message.setChat(chat);
 
-        return messageRepository.save(message);
+        Message savedMessage = messageRepository.save(message);
+
+        // Determine the recipient (the user who is not the sender)
+        User recipient = chat.getUser1().getId().equals(senderId) ? chat.getUser2() : chat.getUser1();
+
+        // Create notification for new message
+        String senderName = sender.getFirstname() + " " + sender.getLastname();
+        String messagePreview = content.length() > 30 ? content.substring(0, 27) + "..." : content;
+
+        notificationService.notifyNewMessage(recipient, senderName, messagePreview, chatId);
+
+        return savedMessage;
     }
 
     @Override

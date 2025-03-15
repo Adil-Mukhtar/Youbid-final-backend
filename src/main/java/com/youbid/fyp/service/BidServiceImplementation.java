@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,9 @@ public class BidServiceImplementation implements BidService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     public Bid placeBid(Integer productId, User bidder, BigDecimal amount) throws Exception {
@@ -72,6 +76,28 @@ public class BidServiceImplementation implements BidService {
         product.setHighestBid(amount);
         product.setHighestBidder(bidder);
         productRepository.save(product);
+
+
+        // Create notification for the new highest bidder
+        notificationService.notifyHighestBidder(
+                bidder,
+                product.getName(),
+                amount.doubleValue(),
+                productId
+        );
+
+        // If there was a previous highest bidder, notify them they've been outbid
+        if (product.getHighestBidder() != null &&
+                !product.getHighestBidder().getId().equals(bidder.getId())) {
+            notificationService.notifyOutbid(
+                    product.getHighestBidder(),
+                    product.getName(),
+                    amount.doubleValue(),
+                    productId
+            );
+        }
+
+        // ... save the bid ...
         return bid;
     }
 
@@ -145,6 +171,14 @@ public class BidServiceImplementation implements BidService {
                     productRepository.save(product);
                     userRepository.save(winner);
 
+                    // Notify winner
+                    notificationService.notifyAuctionWon(
+                            winner,
+                            product.getName(),
+                            bid.getAmount().doubleValue(),
+                            product.getId()
+                    );
+
                     System.out.println("🏆 Product ID " + product.getId() + " sold to " + winner.getFirstname());
                 } else {
                     // Mark product as expired if no valid bids are found
@@ -160,6 +194,59 @@ public class BidServiceImplementation implements BidService {
         } catch (Exception e) {
             System.err.println("❗ Error during scheduled auction processing: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    // Add to BidServiceImplementation.java
+
+    // New method to notify users about auctions ending soon
+    @Scheduled(fixedRate = 3600000) // Run every hour
+    public void notifyAuctionsEndingSoon() {
+        try {
+            // Find products ending in the next 6 hours
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime sixHoursLater = now.plusHours(6);
+
+            List<Product> endingSoonProducts = productRepository.findAll().stream()
+                    .filter(product ->
+                            product.getAuctionDeadline() != null &&
+                                    product.getAuctionDeadline().isAfter(now) &&
+                                    product.getAuctionDeadline().isBefore(sixHoursLater) &&
+                                    "live".equalsIgnoreCase(product.getStatus())
+                    )
+                    .collect(Collectors.toList());
+
+            for (Product product : endingSoonProducts) {
+                // Calculate hours remaining
+                long hoursRemaining = ChronoUnit.HOURS.between(now, product.getAuctionDeadline()) + 1;
+
+                // Get all bidders for this product
+                List<Bid> bids = bidRepository.findAllBidsByProductIdOrderByBidAmountAsc(product.getId());
+                List<User> bidders = bids.stream()
+                        .map(Bid::getBidder)
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                // Notify each bidder
+                for (User bidder : bidders) {
+                    notificationService.notifyAuctionEnding(
+                            bidder,
+                            product.getName(),
+                            (int) hoursRemaining,
+                            product.getId()
+                    );
+                }
+
+                // Also notify the product owner
+                notificationService.notifyAuctionEnding(
+                        product.getUser(),
+                        product.getName(),
+                        (int) hoursRemaining,
+                        product.getId()
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("Error notifying about ending auctions: " + e.getMessage());
         }
     }
 
