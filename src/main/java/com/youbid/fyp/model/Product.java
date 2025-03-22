@@ -1,13 +1,11 @@
 package com.youbid.fyp.model;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Entity
 public class Product {
@@ -30,7 +28,12 @@ public class Product {
 
     @Column
     private LocalDateTime auctionDeadline;
-    // =============
+
+    // Add image paths
+    @ElementCollection
+    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "image_path")
+    private List<String> images = new ArrayList<>();
 
     @ManyToOne
     private User user;
@@ -38,10 +41,9 @@ public class Product {
     private LocalDateTime createdAt;
 
     public Product() {
-
     }
 
-    public Product(Integer id, String name, String description, Integer price, String status, String category, String location, List<Bid> bids, BigDecimal highestBid, User highestBidder, LocalDateTime auctionDeadline, User user, LocalDateTime createdAt) {
+    public Product(Integer id, String name, String description, Integer price, String status, String category, String location, List<Bid> bids, BigDecimal highestBid, User highestBidder, LocalDateTime auctionDeadline, User user, LocalDateTime createdAt, List<String> images) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -54,6 +56,7 @@ public class Product {
         this.auctionDeadline = auctionDeadline;
         this.user = user;
         this.createdAt = createdAt;
+        this.images = images;
     }
 
     public Integer getId() {
@@ -128,9 +131,6 @@ public class Product {
         this.location = location;
     }
 
-
-    //bids///
-
     public BigDecimal getHighestBid() {
         return highestBid;
     }
@@ -153,5 +153,20 @@ public class Product {
 
     public void setAuctionDeadline(LocalDateTime auctionDeadline) {
         this.auctionDeadline = auctionDeadline;
+    }
+
+    public List<String> getImages() {
+        return images;
+    }
+
+    public void setImages(List<String> images) {
+        this.images = images;
+    }
+
+    public void addImage(String imagePath) {
+        if (this.images == null) {
+            this.images = new ArrayList<>();
+        }
+        this.images.add(imagePath);
     }
 }

@@ -7,8 +7,10 @@ import com.youbid.fyp.service.ProductService;
 import com.youbid.fyp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -31,11 +33,34 @@ public class ProductController {
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
 
+    @PostMapping(value = "/products/create-with-images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> createProductWithImages(
+            @RequestPart("product") Product product,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            @RequestHeader("Authorization") String jwt) throws Exception {
+
+        User reqUser = userService.findUserByJwt(jwt);
+        Product createdProduct = productService.createProductWithImages(product, images, reqUser.getId());
+        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+    }
+
     @PutMapping("/products/user/update/{productId}")
     public ResponseEntity<Product> updateProduct(@PathVariable Integer productId, @RequestHeader("Authorization") String jwt, @RequestBody Product product) throws Exception {
 
         User reqUser = userService.findUserByJwt(jwt);
         Product updatedProduct = productService.updateProduct(product,reqUser.getId(), productId);
+        return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/products/user/update-with-images/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> updateProductWithImages(
+            @PathVariable Integer productId,
+            @RequestPart("product") Product product,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            @RequestHeader("Authorization") String jwt) throws Exception {
+
+        User reqUser = userService.findUserByJwt(jwt);
+        Product updatedProduct = productService.updateProductWithImages(product, images, reqUser.getId(), productId);
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
@@ -69,18 +94,4 @@ public class ProductController {
         List<Product> products = productService.findAllProducts();
         return new ResponseEntity<List<Product>>(products, HttpStatus.OK);
     }
-
-//    @PostMapping("/products/close-auction/{productId}")
-//    public ResponseEntity<String> closeAuction(@PathVariable Integer productId) {
-//        try {
-//            productService.closeAuctionForProduct(productId);
-//            return ResponseEntity.ok("Auction closed successfully for product ID: " + productId);
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body("Error closing auction: " + e.getMessage());
-//        }
-//    }
-
-
-
 }
