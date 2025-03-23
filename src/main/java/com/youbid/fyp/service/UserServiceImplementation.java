@@ -1,12 +1,14 @@
-package com.youbid.fyp.service;
+// src/main/java/com/youbid/fyp/service/UserServiceImplementation.java
+// Implement profile picture update logic
 
+package com.youbid.fyp.service;
 
 import com.youbid.fyp.config.JwtProvider;
 import com.youbid.fyp.model.User;
-
 import com.youbid.fyp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +18,9 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    FileStorageService fileStorageService;
 
     //we are not using this register function , this was for testing only
     @Override
@@ -99,25 +104,48 @@ public class UserServiceImplementation implements UserService {
             else {
                 oldUser.setSuspensionDate(user.getSuspensionDate());
             }
+        }
 
+        if(user.getProfilePicture() != null) {
+            oldUser.setProfilePicture(user.getProfilePicture());
         }
 
         User updatedUser = userRepository.save(oldUser);
 
         return updatedUser;
+    }
+
+    @Override
+    public List<User> searchUser(String query) {
+        return userRepository.searchUser(query);
+    }
+
+    @Override
+    public User findUserByJwt(String jwt){
+        String email = JwtProvider.getEmailFromJwtToken(jwt);
+        User user = userRepository.findByEmail(email);
+        return user;
+    }
+
+    @Override
+    public User updateProfilePicture(Integer userId, MultipartFile file) throws Exception {
+        Optional<User> userOpt = userRepository.findById(userId);
+
+        if(userOpt.isEmpty()) {
+            throw new Exception("User does not exist with id: " + userId);
         }
 
-        @Override
-        public List<User> searchUser(String query) {
-            return userRepository.searchUser(query);
+        User user = userOpt.get();
+
+        // Delete old profile picture if exists
+        if(user.getProfilePicture() != null && !user.getProfilePicture().isEmpty()) {
+            fileStorageService.deleteProfilePicture(user.getProfilePicture());
         }
 
-        @Override
-        public User findUserByJwt(String jwt){
+        // Store new profile picture
+        String profilePictureName = fileStorageService.storeProfilePicture(file);
+        user.setProfilePicture(profilePictureName);
 
-            String email = JwtProvider.getEmailFromJwtToken(jwt);
-            User user = userRepository.findByEmail(email);
-            return user;
-        }
-
+        return userRepository.save(user);
+    }
 }

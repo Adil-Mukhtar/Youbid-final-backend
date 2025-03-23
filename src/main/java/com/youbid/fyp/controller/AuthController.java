@@ -1,5 +1,6 @@
-package com.youbid.fyp.controller;
+// src/main/java/com/youbid/fyp/controller/AuthController.java
 
+package com.youbid.fyp.controller;
 
 import com.youbid.fyp.config.JwtProvider;
 import com.youbid.fyp.model.User;
@@ -56,6 +57,7 @@ public class AuthController {
         newUser.setSuspended(false);
         newUser.setBanned(false);
         newUser.setSuspensionDate(null);
+        newUser.setProfilePicture(null); // Initialize profile picture as null
 
         User savedUser = userRepository.save(newUser);
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
@@ -99,11 +101,8 @@ public class AuthController {
         }
     }
 
-
-
     private Authentication authenticate(String email, String password){
         UserDetails userDetails = customUserDetails.loadUserByUsername(email);
-
 
         if(userDetails == null){
             throw new BadCredentialsException("Invalid username!");
@@ -114,5 +113,4 @@ public class AuthController {
         }
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
-
 }

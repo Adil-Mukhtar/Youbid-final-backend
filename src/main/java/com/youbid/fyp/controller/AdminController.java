@@ -21,8 +21,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -192,6 +194,23 @@ public class AdminController {
     public ResponseEntity<ProductStatus> getProductStatus() throws Exception {
         ProductStatus productStatus = productStatusService.getProductStatusById(1);
         return new ResponseEntity<>(productStatus, HttpStatus.OK);
+    }
+
+// src/main/java/com/youbid/fyp/controller/AdminController.java
+// (Add this method to the existing AdminController class)
+
+    @PostMapping("/users/{userId}/upload-profile-picture")
+    public ResponseEntity<?> uploadUserProfilePicture(@PathVariable Integer userId, @RequestParam("file") MultipartFile file) {
+        try {
+            User user = userService.updateProfilePicture(userId, file);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Profile picture uploaded successfully",
+                    "profilePicture", user.getProfilePicture()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to upload profile picture: " + e.getMessage()));
+        }
     }
 
 }

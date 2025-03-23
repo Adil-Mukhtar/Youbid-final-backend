@@ -1,5 +1,7 @@
-package com.youbid.fyp.config;
+// src/main/java/com/youbid/fyp/config/AppConfig.java
+// Update resource handlers to include profiles path
 
+package com.youbid.fyp.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
@@ -72,11 +74,20 @@ public class AppConfig implements WebMvcConfigurer {
     // Configure resource handlers for file access
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        Path uploadDir = Paths.get("./uploads");
-        String uploadPath = uploadDir.toFile().getAbsolutePath();
+        // For product images
+        Path uploadImagesDir = Paths.get("./uploads/images");
+        String uploadImagesPath = uploadImagesDir.toFile().getAbsolutePath();
 
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + uploadPath + "/")
+        // For profile pictures
+        Path uploadProfilesDir = Paths.get("./uploads/profiles");
+        String uploadProfilesPath = uploadProfilesDir.toFile().getAbsolutePath();
+
+        registry.addResourceHandler("/uploads/images/**")
+                .addResourceLocations("file:" + uploadImagesPath + "/")
+                .setCachePeriod(3600);
+
+        registry.addResourceHandler("/uploads/profiles/**")
+                .addResourceLocations("file:" + uploadProfilesPath + "/")
                 .setCachePeriod(3600);
     }
 }

@@ -1,5 +1,7 @@
-package com.youbid.fyp.model;
+// src/main/java/com/youbid/fyp/model/User.java
+// Add profile picture field to the User model
 
+package com.youbid.fyp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -26,6 +28,7 @@ public class User {
     private Boolean isBanned;
     private Boolean isSuspended;
     private LocalDateTime suspensionDate;
+    private String profilePicture;  // New field for profile picture
 
     @JsonIgnore
     @ManyToMany
@@ -41,13 +44,13 @@ public class User {
 
     private String role; //admin or normal user
 
-
     public User() {
-
     }
 
-
-    public User(Integer id, String firstname, String lastname, String password, String email, String gender, BigDecimal balance, String cellphone, Boolean isBanned, Boolean isSuspended, LocalDateTime suspensionDate, List<Product> product, List<Review> reviews, List<Product> wonItems, String role) {
+    public User(Integer id, String firstname, String lastname, String password, String email, String gender,
+                BigDecimal balance, String cellphone, Boolean isBanned, Boolean isSuspended,
+                LocalDateTime suspensionDate, List<Product> product, List<Review> reviews,
+                List<Product> wonItems, String role, String profilePicture) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
@@ -63,8 +66,20 @@ public class User {
         this.reviews = reviews;
         this.wonItems = wonItems;
         this.role = role;
+        this.profilePicture = profilePicture;
     }
 
+    // Existing getters and setters...
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    // Rest of the existing getters and setters remain the same
     public Integer getId() {
         return id;
     }
@@ -162,5 +177,4 @@ public class User {
     public List<Product> getWonItems() {return wonItems;}
 
     public void setWonItems(List<Product> wonItems) {this.wonItems = wonItems;}
-
 }
