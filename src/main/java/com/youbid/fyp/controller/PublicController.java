@@ -1,10 +1,12 @@
 package com.youbid.fyp.controller;
 
-
 import com.youbid.fyp.model.Product;
 import com.youbid.fyp.model.Review;
+import com.youbid.fyp.model.User;
 import com.youbid.fyp.service.ProductService;
+import com.youbid.fyp.service.RecommendationService;
 import com.youbid.fyp.service.ReviewService;
+import com.youbid.fyp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/public")
@@ -22,6 +25,12 @@ public class PublicController {
 
     @Autowired
     private ReviewService reviewService;
+
+    @Autowired
+    private RecommendationService recommendationService;
+
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getAllProducts() {
@@ -39,28 +48,28 @@ public class PublicController {
         }
     }
 
-//    @GetMapping("/products/search")
-//    public ResponseEntity<List<Product>> searchProducts(
-//            @RequestParam(required = false) String query,
-//            @RequestParam(required = false) String location,
-//            @RequestParam(required = false) String category) {
-//        try {
-//            List<Product> products = productService.searchProducts(query, location, category);
-//            return new ResponseEntity<>(products, HttpStatus.OK);
-//        } catch (Exception e) {
-//            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-//        }
-//    }
-
     @GetMapping("/products/search")
     public ResponseEntity<List<Product>> searchProducts(
             @RequestParam(required = false) String query,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice) {
+            @RequestParam(required = false) Double maxPrice,
+            @RequestHeader(value = "Authorization", required = false) String jwt) {
         try {
             List<Product> products = productService.searchProducts(query, location, category, minPrice, maxPrice);
+
+            // Track search if user is logged in
+            if (jwt != null && !jwt.isEmpty()) {
+                try {
+                    User user = userService.findUserByJwt(jwt);
+                    recommendationService.trackSearch(user.getId(), query, category, location, minPrice, maxPrice);
+                } catch (Exception e) {
+                    // Log but don't fail the search if tracking fails
+                    System.err.println("Error tracking search: " + e.getMessage());
+                }
+            }
+
             return new ResponseEntity<>(products, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -78,8 +87,4 @@ public class PublicController {
             return new ResponseEntity<>(Map.of("error", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
-
 }

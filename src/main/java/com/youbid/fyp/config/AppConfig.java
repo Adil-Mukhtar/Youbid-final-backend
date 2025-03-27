@@ -1,6 +1,3 @@
-// src/main/java/com/youbid/fyp/config/AppConfig.java
-// Update resource handlers to include profiles path
-
 package com.youbid.fyp.config;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +30,8 @@ public class AppConfig implements WebMvcConfigurer {
                         SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(Authorize -> Authorize
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/public/**").permitAll() // Allow "/public" API
+                        .requestMatchers("/public/**").permitAll() // Allow all "/public" APIs
+                        .requestMatchers("/public/recommendations/**").permitAll() // Allow public recommendations
                         .requestMatchers("/api/files/**").permitAll() // Allow direct file access
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
@@ -55,8 +53,8 @@ public class AppConfig implements WebMvcConfigurer {
                 cfg.setAllowedOrigins(Arrays.asList(
                         "http://localhost:3000/"));
                 cfg.setAllowedMethods(Collections.singletonList("*"));
-                cfg.setAllowCredentials(true);
                 cfg.setAllowedHeaders(Collections.singletonList("*"));
+                cfg.setAllowCredentials(true);
                 cfg.setExposedHeaders(Arrays.asList(
                         "Authorization"));
                 cfg.setMaxAge(3600L);
