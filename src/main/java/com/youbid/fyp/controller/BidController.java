@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,7 +43,7 @@ public class BidController {
 
     @PostMapping("/place/{productId}")
     public ResponseEntity<Bid> placeBid( @PathVariable Integer productId,  @RequestHeader("Authorization") String jwt,
-            @RequestBody Bid bid
+                                         @RequestBody Bid bid
     ) throws Exception {
 
         BigDecimal amount = bid.getAmount();
@@ -57,10 +58,74 @@ public class BidController {
         return new ResponseEntity<>(bids, HttpStatus.OK);
     }
 
+    // New endpoint to get user's active bids
+    @GetMapping("/active")
+    public ResponseEntity<?> getActiveBids(@RequestHeader("Authorization") String jwt) {
+        try {
+            User user = userService.findUserByJwt(jwt);
+            List<Bid> activeBids = bidService.getActiveBidsByUser(user.getId());
 
-    //for testing purposes
+            List<Map<String, Object>> formattedBids = formatBidsForResponse(activeBids);
 
-    //for testing purposes
+            return ResponseEntity.ok(formattedBids);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // New endpoint to get user's lost bids
+    @GetMapping("/lost")
+    public ResponseEntity<?> getLostBids(@RequestHeader("Authorization") String jwt) {
+        try {
+            User user = userService.findUserByJwt(jwt);
+            List<Bid> lostBids = bidService.getLostBidsByUser(user.getId());
+
+            List<Map<String, Object>> formattedBids = formatBidsForResponse(lostBids);
+
+            return ResponseEntity.ok(formattedBids);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Helper method to format bids for response
+    private List<Map<String, Object>> formatBidsForResponse(List<Bid> bids) {
+        List<Map<String, Object>> formattedBids = new ArrayList<>();
+
+        for (Bid bid : bids) {
+            Map<String, Object> bidInfo = new HashMap<>();
+
+            Product product = bid.getProduct();
+
+            bidInfo.put("bidId", bid.getId());
+            bidInfo.put("bidAmount", bid.getAmount());
+            bidInfo.put("bidTime", bid.getBidPlaceTime());
+            bidInfo.put("productId", product.getId());
+            bidInfo.put("productName", product.getName());
+            bidInfo.put("productStatus", product.getStatus());
+            bidInfo.put("productCategory", product.getCategory());
+            bidInfo.put("highestBid", product.getHighestBid());
+            bidInfo.put("isHighestBidder",
+                    product.getHighestBidder() != null &&
+                            product.getHighestBidder().getId().equals(bid.getBidder().getId()));
+
+            // Add auction deadline if it exists
+            if (product.getAuctionDeadline() != null) {
+                bidInfo.put("auctionDeadline", product.getAuctionDeadline());
+                bidInfo.put("isAuctionEnded", product.getAuctionDeadline().isBefore(LocalDateTime.now()));
+            } else {
+                bidInfo.put("isAuctionEnded", false);
+            }
+
+            formattedBids.add(bidInfo);
+        }
+
+        return formattedBids;
+    }
+
+
     @GetMapping("/winner/{productId}")
     public ResponseEntity<?> AuctionWinner(@PathVariable Integer productId) {
         try {
@@ -105,7 +170,6 @@ public class BidController {
         }
     }
 
-    //for testing purposes
     @GetMapping("/winners/process-all")
     public ResponseEntity<?> processAllAuctionWinners() {
         try {
@@ -168,30 +232,4 @@ public class BidController {
                     .body("Failed to process auction winners: " + e.getMessage());
         }
     }
-
-    // Add these methods to your existing BidController.java
-
-    @GetMapping("/api/bids/active")
-    public ResponseEntity<List<Bid>> getActiveBids(@RequestHeader("Authorization") String jwt) {
-        try {
-            User user = userService.findUserByJwt(jwt);
-            List<Bid> activeBids = bidService.getActiveBidsByUser(user.getId());
-            return new ResponseEntity<>(activeBids, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @GetMapping("/api/bids/lost")
-    public ResponseEntity<List<Bid>> getLostBids(@RequestHeader("Authorization") String jwt) {
-        try {
-            User user = userService.findUserByJwt(jwt);
-            List<Bid> lostBids = bidService.getLostBidsByUser(user.getId());
-            return new ResponseEntity<>(lostBids, HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
 }

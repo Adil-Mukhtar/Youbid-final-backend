@@ -7,11 +7,7 @@ import com.youbid.fyp.model.User;
 import com.youbid.fyp.repository.BidRepository;
 import com.youbid.fyp.repository.ProductRepository;
 import com.youbid.fyp.repository.UserRepository;
-import org.hibernate.sql.ast.tree.expression.Over;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,13 +49,17 @@ public class BidServiceImplementation implements BidService {
             throw new Exception("Auction has ended");
         }
 
-        if(bidder.getId() == product.getUser().getId())
-        {
+        if(bidder.getId() == product.getUser().getId()) {
             throw new Exception("You cannot place a bid on your own product!");
         }
 
-        if(bidder.getBalance().compareTo(productPrice) < 0){
+        if(bidder.getBalance().compareTo(productPrice) < 0) {
             throw new Exception("You dont have enough balance to place bid on this product!");
+        }
+
+        // New validation: Check if bid amount is less than the product price
+        if (amount.compareTo(productPrice) < 0) {
+            throw new Exception("Bid amount must be at least the product's starting price!");
         }
 
         if (product.getHighestBid() != null && amount.compareTo(product.getHighestBid()) <= 0) {
@@ -76,7 +76,6 @@ public class BidServiceImplementation implements BidService {
         product.setHighestBid(amount);
         product.setHighestBidder(bidder);
         productRepository.save(product);
-
 
         // Create notification for the new highest bidder
         notificationService.notifyHighestBidder(
@@ -97,17 +96,8 @@ public class BidServiceImplementation implements BidService {
             );
         }
 
-        // ... save the bid ...
         return bid;
     }
-
-//    @Override
-//    public List<BidDTO> getBidHistory(Integer productId) throws Exception {
-//        Product product = productRepository.findById(productId).orElseThrow(() -> new Exception("Product not found"));
-//
-//        List<BidDTO> allBidsForProduct = bidRepository.findAllBidDetailsByProductIdOrderByBidAmountAscDTO(productId);
-//        return allBidsForProduct;
-//    }
 
     @Override
     public List<BidDTO> getBidHistory(Integer productId) throws Exception {
@@ -116,8 +106,6 @@ public class BidServiceImplementation implements BidService {
 
         return bidRepository.findAllBidDetailsByProductIdOrderByBidAmountAscDTO(productId);
     }
-
-
 
     @Override
     public Optional<Bid> getHighestBidByProductId(Integer productId) {
@@ -197,9 +185,7 @@ public class BidServiceImplementation implements BidService {
         }
     }
 
-    // Add to BidServiceImplementation.java
-
-    // New method to notify users about auctions ending soon
+    // Notification method for auctions ending soon
     @Scheduled(fixedRate = 3600000) // Run every hour
     public void notifyAuctionsEndingSoon() {
         try {
@@ -250,7 +236,7 @@ public class BidServiceImplementation implements BidService {
         }
     }
 
-    // Add these implementations to your BidServiceImplementation.java class
+    // Implementation of the new methods added to BidService interface
 
     @Override
     public List<Bid> getActiveBidsByUser(Integer userId) throws Exception {
@@ -263,9 +249,9 @@ public class BidServiceImplementation implements BidService {
         return allUserBids.stream()
                 .filter(bid -> {
                     Product product = bid.getProduct();
-                    return product.getAuctionDeadline().isAfter(LocalDateTime.now()) &&
-                            !"sold".equalsIgnoreCase(product.getStatus()) &&
-                            !"expired".equalsIgnoreCase(product.getStatus());
+                    return product.getAuctionDeadline() != null &&
+                            product.getAuctionDeadline().isAfter(LocalDateTime.now()) &&
+                            "live".equalsIgnoreCase(product.getStatus());
                 })
                 .collect(Collectors.toList());
     }
@@ -281,13 +267,19 @@ public class BidServiceImplementation implements BidService {
         return allUserBids.stream()
                 .filter(bid -> {
                     Product product = bid.getProduct();
-                    return (product.getAuctionDeadline().isBefore(LocalDateTime.now()) ||
-                            "sold".equalsIgnoreCase(product.getStatus())) &&
-                            (product.getHighestBidder() == null ||
-                                    !product.getHighestBidder().getId().equals(userId));
+
+                    // Check if auction has ended (either deadline passed or status is "sold" or "expired")
+                    boolean auctionEnded = (product.getAuctionDeadline() != null &&
+                            product.getAuctionDeadline().isBefore(LocalDateTime.now())) ||
+                            "sold".equalsIgnoreCase(product.getStatus()) ||
+                            "expired".equalsIgnoreCase(product.getStatus());
+
+                    // Check if user is not the highest bidder
+                    boolean notHighestBidder = product.getHighestBidder() == null ||
+                            !product.getHighestBidder().getId().equals(userId);
+
+                    return auctionEnded && notHighestBidder;
                 })
                 .collect(Collectors.toList());
     }
-
-
 }
