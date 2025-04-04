@@ -213,4 +213,39 @@ public class AdminController {
         }
     }
 
+    // Update in AdminController.java
+// Add this method to register support users
+
+    @PostMapping("/registerSupportUser")
+    public AuthResponse registerSupportUser(@RequestBody User user) throws Exception {
+        User isExist = userRepository.findByEmail(user.getEmail());
+
+        if (isExist != null) {
+            throw new Exception("Email already in use by another account!");
+        }
+
+        User newUser = new User();
+
+        newUser.setEmail(user.getEmail());
+        newUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        newUser.setFirstname(user.getFirstname());
+        newUser.setLastname(user.getLastname());
+        newUser.setRole("SUPPORT");
+        newUser.setGender(user.getGender());
+        newUser.setBalance(user.getBalance());
+        newUser.setCellphone(user.getCellphone());
+        newUser.setBanned(false);
+        newUser.setSuspended(false);
+        newUser.setSuspensionDate(null);
+
+        User savedUser = userRepository.save(newUser);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
+
+        String token = JwtProvider.generateToken(authentication, savedUser);
+        AuthResponse res = new AuthResponse(token, "Support User Registered Successfully! :)", savedUser);
+
+        return res;
+    }
+
 }
+

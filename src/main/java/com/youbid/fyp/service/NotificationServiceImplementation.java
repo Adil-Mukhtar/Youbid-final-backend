@@ -100,4 +100,26 @@ public class NotificationServiceImplementation implements NotificationService {
         String message = senderName + ": " + messagePreview;
         createNotification("message", title, message, user, null, chatId);
     }
+
+    // Add to NotificationServiceImplementation.java
+    @Override
+    public void notifySupportChatCreated(User user, String topic, Integer chatId) {
+        String title = "New Support Chat";
+        String message = "Your support request about \"" + topic + "\" has been created";
+        createNotification("support_chat", title, message, user, null, chatId);
+    }
+
+    @Override
+    public void notifySupportChatAssigned(User supportAgent, String topic, Integer chatId) {
+        String title = "Support Chat Assigned";
+        String message = "You have been assigned to a support chat about \"" + topic + "\"";
+        createNotification("support_chat", title, message, supportAgent, null, chatId);
+    }
+
+    @Override
+    public void notifySupportMessage(User recipient, String senderName, String messagePreview, Integer chatId) {
+        String title = "New Support Message";
+        String message = senderName + ": " + messagePreview;
+        createNotification("support_message", title, message, recipient, null, chatId);
+    }
 }

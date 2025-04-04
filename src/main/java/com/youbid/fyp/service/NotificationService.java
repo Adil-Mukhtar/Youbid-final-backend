@@ -18,4 +18,9 @@ public interface NotificationService {
     void notifyAuctionEnding(User user, String productName, Integer hoursLeft, Integer productId);
     void notifyAuctionWon(User user, String productName, Double winningBid, Integer productId);
     void notifyNewMessage(User user, String senderName, String messagePreview, Integer chatId);
+
+    // Add to NotificationService.java interface
+    void notifySupportChatCreated(User user, String topic, Integer chatId);
+    void notifySupportChatAssigned(User supportAgent, String topic, Integer chatId);
+    void notifySupportMessage(User recipient, String senderName, String messagePreview, Integer chatId);
 }

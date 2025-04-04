@@ -24,6 +24,9 @@ import java.util.Collections;
 @EnableWebSecurity
 public class AppConfig implements WebMvcConfigurer {
 
+// Update in AppConfig.java
+// Add SUPPORT role to API authorization
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.sessionManagement(management -> management.sessionCreationPolicy(
@@ -32,9 +35,11 @@ public class AppConfig implements WebMvcConfigurer {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/public/**").permitAll() // Allow all "/public" APIs
                         .requestMatchers("/public/recommendations/**").permitAll() // Allow public recommendations
+                        .requestMatchers("/public/support/**").permitAll() // Allow public support endpoints
                         .requestMatchers("/api/files/**").permitAll() // Allow direct file access
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/support-staff/**").hasAnyRole("ADMIN", "SUPPORT") // Support staff endpoints
+                        .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN", "SUPPORT") // Allow SUPPORT role
                         .anyRequest().authenticated())
                 .addFilterBefore(new jwtValidator(), BasicAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable())
