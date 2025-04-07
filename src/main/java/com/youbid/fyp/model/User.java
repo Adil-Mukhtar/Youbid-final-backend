@@ -1,6 +1,3 @@
-// src/main/java/com/youbid/fyp/model/User.java
-// Add profile picture field to the User model
-
 package com.youbid.fyp.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,7 +25,8 @@ public class User {
     private Boolean isBanned;
     private Boolean isSuspended;
     private LocalDateTime suspensionDate;
-    private String profilePicture;  // New field for profile picture
+    private String profilePicture;  // Field for profile picture
+    private Integer loyaltyPoints;  // New field for loyalty points
 
     @JsonIgnore
     @ManyToMany
@@ -42,17 +40,16 @@ public class User {
     @ManyToMany
     private List<Product> wonItems = new ArrayList<>();
 
-    private String role; //admin or normal user
-
-
+    private String role; // admin or normal user
 
     public User() {
+        this.loyaltyPoints = 0;
     }
 
     public User(Integer id, String firstname, String lastname, String password, String email, String gender,
                 BigDecimal balance, String cellphone, Boolean isBanned, Boolean isSuspended,
                 LocalDateTime suspensionDate, List<Product> product, List<Review> reviews,
-                List<Product> wonItems, String role, String profilePicture) {
+                List<Product> wonItems, String role, String profilePicture, Integer loyaltyPoints) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
@@ -69,9 +66,17 @@ public class User {
         this.wonItems = wonItems;
         this.role = role;
         this.profilePicture = profilePicture;
+        this.loyaltyPoints = loyaltyPoints != null ? loyaltyPoints : 0;
     }
 
-    // Existing getters and setters...
+    // For backward compatibility with existing code
+    public User(Integer id, String firstname, String lastname, String password, String email, String gender,
+                BigDecimal balance, String cellphone, Boolean isBanned, Boolean isSuspended,
+                LocalDateTime suspensionDate, List<Product> product, List<Review> reviews,
+                List<Product> wonItems, String role, String profilePicture) {
+        this(id, firstname, lastname, password, email, gender, balance, cellphone, isBanned, isSuspended,
+                suspensionDate, product, reviews, wonItems, role, profilePicture, 0);
+    }
 
     public String getProfilePicture() {
         return profilePicture;
@@ -81,7 +86,15 @@ public class User {
         this.profilePicture = profilePicture;
     }
 
-    // Rest of the existing getters and setters remain the same
+    public Integer getLoyaltyPoints() {
+        return loyaltyPoints;
+    }
+
+    public void setLoyaltyPoints(Integer loyaltyPoints) {
+        this.loyaltyPoints = loyaltyPoints;
+    }
+
+    // Rest of the existing getters and setters
     public Integer getId() {
         return id;
     }

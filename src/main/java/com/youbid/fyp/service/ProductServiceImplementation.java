@@ -51,6 +51,9 @@ public class ProductServiceImplementation implements ProductService {
     @Autowired
     FileStorageService fileStorageService;
 
+    @Autowired
+    private LoyaltyService loyaltyService;
+
     @Override
     public Product createProduct(Product product, Integer userId) throws Exception {
         ProductStatus productStatus = productStatusService.getProductStatusById(1);
@@ -72,7 +75,17 @@ public class ProductServiceImplementation implements ProductService {
             newProduct.setImages(product.getImages());
         }
 
-        return productRepository.save(newProduct);
+        Product savedProduct = productRepository.save(newProduct);
+
+        try {
+            // Award loyalty points for creating a new listing
+            loyaltyService.awardPointsForListingCreated(userId, savedProduct.getId());
+        } catch (Exception e) {
+            // Just log the error but don't stop the product creation process
+            System.err.println("Error awarding loyalty points: " + e.getMessage());
+        }
+
+        return savedProduct;
     }
 
     @Override
@@ -99,6 +112,14 @@ public class ProductServiceImplementation implements ProductService {
             List<String> imageNames = fileStorageService.storeFiles(images);
             savedProduct.setImages(imageNames);
             savedProduct = productRepository.save(savedProduct);
+        }
+
+        try {
+            // Award loyalty points for creating a new listing
+            loyaltyService.awardPointsForListingCreated(userId, savedProduct.getId());
+        } catch (Exception e) {
+            // Just log the error but don't stop the product creation process
+            System.err.println("Error awarding loyalty points: " + e.getMessage());
         }
 
         return savedProduct;

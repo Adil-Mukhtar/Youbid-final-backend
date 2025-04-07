@@ -1,5 +1,3 @@
-// src/main/java/com/youbid/fyp/controller/AuthController.java
-
 package com.youbid.fyp.controller;
 
 import com.youbid.fyp.config.JwtProvider;
@@ -58,6 +56,7 @@ public class AuthController {
         newUser.setBanned(false);
         newUser.setSuspensionDate(null);
         newUser.setProfilePicture(null); // Initialize profile picture as null
+        newUser.setLoyaltyPoints(0);     // Initialize loyalty points as 0
 
         User savedUser = userRepository.save(newUser);
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());

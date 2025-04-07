@@ -39,6 +39,9 @@ public class BidServiceImplementation implements BidService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private LoyaltyService loyaltyService;
+
     @Override
     public Bid placeBid(Integer productId, User bidder, BigDecimal amount) throws Exception {
         Product product = productRepository.findById(productId).orElseThrow(() -> new Exception("Product not found"));
@@ -94,6 +97,14 @@ public class BidServiceImplementation implements BidService {
                     amount.doubleValue(),
                     productId
             );
+        }
+
+        try {
+            // Award loyalty points for placing a bid
+            loyaltyService.awardPointsForBidPlaced(bidder.getId(), productId);
+        } catch (Exception e) {
+            // Just log the error but don't stop the bid process
+            System.err.println("Error awarding loyalty points: " + e.getMessage());
         }
 
         return bid;
@@ -168,6 +179,13 @@ public class BidServiceImplementation implements BidService {
                     );
 
                     System.out.println("🏆 Product ID " + product.getId() + " sold to " + winner.getFirstname());
+
+                    // After a winner is assigned to a product, award points
+                    try {
+                        loyaltyService.awardPointsForAuctionWon(winner.getId(), product.getId());
+                    } catch (Exception e) {
+                        System.err.println("Error awarding loyalty points for auction win: " + e.getMessage());
+                    }
                 } else {
                     // Mark product as expired if no valid bids are found
                     product.setStatus("expired");
