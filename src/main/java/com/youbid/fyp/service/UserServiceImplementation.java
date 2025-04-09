@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -21,6 +22,9 @@ public class UserServiceImplementation implements UserService {
 
     @Autowired
     FileStorageService fileStorageService;
+
+    @Autowired
+    private LoyaltyService loyaltyService;
 
     //we are not using this register function , this was for testing only
     @Override
@@ -147,5 +151,13 @@ public class UserServiceImplementation implements UserService {
         user.setProfilePicture(profilePictureName);
 
         return userRepository.save(user);
+    }
+
+    /**
+     * Get the loyalty status for a user - convenience method
+     */
+    @Override
+    public Map<String, Object> getLoyaltyStatus(Integer userId) throws Exception {
+        return loyaltyService.getUserLoyaltyStatus(userId);
     }
 }

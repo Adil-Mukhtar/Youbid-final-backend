@@ -2,6 +2,7 @@ package com.youbid.fyp.repository;
 
 import com.youbid.fyp.model.UserReward;
 import com.youbid.fyp.model.User;
+import com.youbid.fyp.model.Reward;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -21,4 +22,7 @@ public interface UserRewardRepository extends JpaRepository<UserReward, Integer>
 
     // Find expired but unused rewards
     List<UserReward> findByIsUsedFalseAndExpiresAtBefore(LocalDateTime now);
+
+    // Find user rewards by reward (new method)
+    List<UserReward> findByReward(Reward reward);
 }

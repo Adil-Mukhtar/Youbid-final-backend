@@ -42,6 +42,9 @@ public class BidServiceImplementation implements BidService {
     @Autowired
     private LoyaltyService loyaltyService;
 
+    @Autowired
+    private BidServiceExtension bidServiceExtension;
+
     @Override
     public Bid placeBid(Integer productId, User bidder, BigDecimal amount) throws Exception {
         Product product = productRepository.findById(productId).orElseThrow(() -> new Exception("Product not found"));
@@ -57,7 +60,15 @@ public class BidServiceImplementation implements BidService {
         }
 
         if(bidder.getBalance().compareTo(productPrice) < 0) {
-            throw new Exception("You dont have enough balance to place bid on this product!");
+            throw new Exception("You don't have enough balance to place bid on this product!");
+        }
+
+        // Add check for exclusive access eligibility
+        if (product.hasExclusiveAccess()) {
+            Map<String, Object> eligibility = bidServiceExtension.checkBidEligibility(productId, bidder.getId());
+            if (!(boolean)eligibility.get("isEligible")) {
+                throw new Exception((String)eligibility.get("message"));
+            }
         }
 
         // New validation: Check if bid amount is less than the product price

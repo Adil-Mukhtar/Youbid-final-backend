@@ -5,6 +5,7 @@ import com.youbid.fyp.model.User;
 import com.youbid.fyp.repository.UserRepository;
 import com.youbid.fyp.request.LoginRequest;
 import com.youbid.fyp.response.AuthResponse;
+import com.youbid.fyp.service.ActivityService;
 import com.youbid.fyp.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,6 +35,9 @@ public class AuthController {
     @Autowired
     private CustomUserDetailsService customUserDetails;
 
+    @Autowired
+    private ActivityService activityService; // Add this
+
     @PostMapping("/register")
     public AuthResponse createUser(@RequestBody User user) throws Exception {
         User isExist = userRepository.findByEmail(user.getEmail());
@@ -62,6 +66,14 @@ public class AuthController {
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
 
         String token = JwtProvider.generateToken(authentication, savedUser);
+
+        // Track activity
+        activityService.trackUserActivity(
+                "New User Registration",
+                String.format("%s %s joined the platform", user.getFirstname(), user.getLastname()),
+                savedUser.getId()
+        );
+
         AuthResponse res = new AuthResponse(token, "Registered Successfully! :)", savedUser);
 
         return res;
@@ -86,6 +98,15 @@ public class AuthController {
             }
 
             String token = JwtProvider.generateToken(authentication, user);
+
+            // Track activity for admin logins only (to avoid cluttering the activity feed)
+            if ("ADMIN".equals(user.getRole())) {
+                activityService.trackUserActivity(
+                        "Admin Login",
+                        String.format("Admin %s %s logged in", user.getFirstname(), user.getLastname()),
+                        user.getId()
+                );
+            }
 
             AuthResponse res = new AuthResponse(token, "Login Successful!", user);
             return ResponseEntity.ok(res);

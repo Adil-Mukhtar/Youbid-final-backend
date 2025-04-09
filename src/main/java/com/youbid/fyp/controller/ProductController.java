@@ -3,6 +3,7 @@ package com.youbid.fyp.controller;
 import com.youbid.fyp.model.Product;
 import com.youbid.fyp.model.User;
 import com.youbid.fyp.response.ApiResponse;
+import com.youbid.fyp.service.ActivityService;
 import com.youbid.fyp.service.ProductService;
 import com.youbid.fyp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ public class ProductController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    ActivityService activityService;
 
     @PostMapping("/products/create")
     public ResponseEntity<Product> createProduct(@RequestBody Product product,
@@ -30,6 +33,14 @@ public class ProductController {
 
         User reqUser = userService.findUserByJwt(jwt);
         Product createdProduct = productService.createProduct(product, reqUser.getId());
+
+        // Track activity
+        activityService.trackProductActivity(
+                "New Listing Created",
+                String.format("%s created listing \"%s\"", reqUser.getFirstname(), product.getName()),
+                createdProduct.getId()
+        );
+
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
 
@@ -41,6 +52,16 @@ public class ProductController {
 
         User reqUser = userService.findUserByJwt(jwt);
         Product createdProduct = productService.createProductWithImages(product, images, reqUser.getId());
+
+        // Track activity
+        activityService.trackProductActivity(
+                "New Listing Created with Images",
+                String.format("%s created listing \"%s\" with %d images",
+                        reqUser.getFirstname(), product.getName(),
+                        images != null ? images.size() : 0),
+                createdProduct.getId()
+        );
+
         return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
     }
 
@@ -49,6 +70,14 @@ public class ProductController {
 
         User reqUser = userService.findUserByJwt(jwt);
         Product updatedProduct = productService.updateProduct(product,reqUser.getId(), productId);
+
+        // Track activity
+        activityService.trackProductActivity(
+                "Listing Updated",
+                String.format("%s updated listing \"%s\"", reqUser.getFirstname(), updatedProduct.getName()),
+                updatedProduct.getId()
+        );
+
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
@@ -61,6 +90,14 @@ public class ProductController {
 
         User reqUser = userService.findUserByJwt(jwt);
         Product updatedProduct = productService.updateProductWithImages(product, images, reqUser.getId(), productId);
+
+        // Track activity
+        activityService.trackProductActivity(
+                "Listing Updated with Images",
+                String.format("%s updated listing \"%s\" with images", reqUser.getFirstname(), updatedProduct.getName()),
+                updatedProduct.getId()
+        );
+
         return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
     }
 
@@ -68,8 +105,17 @@ public class ProductController {
     public ResponseEntity<ApiResponse> deleteProduct(@PathVariable Integer productId, @RequestHeader("Authorization") String jwt ) throws Exception {
 
         User reqUser = userService.findUserByJwt(jwt);
+        Product product = productService.findProductById(productId);
 
         String message = productService.deleteProduct(productId, reqUser.getId());
+
+        // Track activity
+        activityService.trackProductActivity(
+                "Listing Deleted",
+                String.format("%s deleted listing \"%s\"", reqUser.getFirstname(), product.getName()),
+                productId
+        );
+
         ApiResponse res = new ApiResponse();
         res.setMessage(message);
         return new ResponseEntity<ApiResponse>(res, HttpStatus.OK);

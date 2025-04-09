@@ -1,23 +1,24 @@
 package com.youbid.fyp.service;
 
+import com.youbid.fyp.model.Product;
 import com.youbid.fyp.model.Reward;
 import com.youbid.fyp.model.User;
 import com.youbid.fyp.model.UserReward;
-import com.youbid.fyp.model.Product;
+import com.youbid.fyp.repository.ProductRepository;
 import com.youbid.fyp.repository.RewardRepository;
 import com.youbid.fyp.repository.UserRepository;
 import com.youbid.fyp.repository.UserRewardRepository;
-import com.youbid.fyp.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
-import java.math.BigDecimal;
 
 @Service
 public class RewardServiceImplementation implements RewardService {
@@ -35,10 +36,10 @@ public class RewardServiceImplementation implements RewardService {
     private ProductRepository productRepository;
 
     @Autowired
-    private LoyaltyService loyaltyService;
+    private NotificationService notificationService;
 
     @Autowired
-    private NotificationService notificationService;
+    private LoyaltyService loyaltyService;
 
     // Default expiration time in days for redeemed rewards
     private static final int DEFAULT_REWARD_EXPIRY_DAYS = 30;
@@ -47,6 +48,11 @@ public class RewardServiceImplementation implements RewardService {
     public Reward createReward(Reward reward) throws Exception {
         if (reward.getPointsCost() <= 0) {
             throw new Exception("Points cost must be greater than zero");
+        }
+
+        // Set created time if it's null
+        if (reward.getCreatedAt() == null) {
+            reward.setCreatedAt(LocalDateTime.now());
         }
 
         return rewardRepository.save(reward);
@@ -96,6 +102,11 @@ public class RewardServiceImplementation implements RewardService {
     @Override
     public List<Reward> getActiveRewards() {
         return rewardRepository.findByIsActiveTrue();
+    }
+
+    @Override
+    public List<Reward> getAllRewards() {
+        return rewardRepository.findAll();
     }
 
     @Override
@@ -191,8 +202,17 @@ public class RewardServiceImplementation implements RewardService {
             case "DISCOUNT":
                 // Calculate discount amount
                 Integer discountPercent = reward.getDiscountPercent();
+
+                // Apply discount to product
+                product.setDiscountPercent(new BigDecimal(discountPercent));
+                product.setDiscountCode(redemptionCode);
+                product.setDiscountUntil(LocalDateTime.now().plusDays(14)); // Discount valid for 14 days
+
+                productRepository.save(product);
+
                 BigDecimal originalPrice = BigDecimal.valueOf(product.getPrice());
-                BigDecimal discountAmount = originalPrice.multiply(BigDecimal.valueOf(discountPercent).divide(BigDecimal.valueOf(100)));
+                BigDecimal discountDecimal = new BigDecimal(discountPercent).divide(new BigDecimal(100));
+                BigDecimal discountAmount = originalPrice.multiply(discountDecimal);
                 BigDecimal discountedPrice = originalPrice.subtract(discountAmount);
 
                 result.put("originalPrice", originalPrice);
@@ -202,16 +222,33 @@ public class RewardServiceImplementation implements RewardService {
                 break;
 
             case "FEATURED_LISTING":
-                // Logic for applying featured status to a listing
-                // This would typically involve updating some field on the product
-                // and possibly affecting how it appears in search results
+                // Apply featured status to listing
+                product.setIsFeatured(true);
+                product.setFeaturedUntil(LocalDateTime.now().plusDays(7)); // Featured for 7 days
+
+                productRepository.save(product);
+
                 result.put("featuredStatus", "applied");
                 result.put("featuredDuration", "7 days");
+                result.put("featuredUntil", product.getFeaturedUntil());
                 break;
 
             case "EXCLUSIVE_ACCESS":
-                // Logic for granting exclusive early access to an auction
+                // Get user's loyalty tier
+                User user = userReward.getUser();
+                Map<String, Object> loyaltyStatus = loyaltyService.getUserLoyaltyStatus(user.getId());
+                String userTier = (String) loyaltyStatus.get("tier");
+
+                // Apply exclusive access
+                product.setIsExclusive(true);
+                product.setExclusiveAccessTier(userTier);
+                product.setExclusiveUntil(LocalDateTime.now().plusDays(3)); // Exclusive for 3 days
+
+                productRepository.save(product);
+
                 result.put("exclusiveAccess", "granted");
+                result.put("exclusiveTier", userTier);
+                result.put("exclusiveUntil", product.getExclusiveUntil());
                 break;
 
             default:
@@ -222,12 +259,111 @@ public class RewardServiceImplementation implements RewardService {
         userReward.setIsUsed(true);
         userRewardRepository.save(userReward);
 
+        // Create notification for the product owner
+        notificationService.createNotification(
+                "reward_applied",
+                "Reward Applied",
+                "Your " + reward.getType().toLowerCase().replace("_", " ") + " reward has been applied to your listing: " + product.getName(),
+                product.getUser(),
+                productId,
+                null
+        );
+
         // Add reference to the applied reward
         result.put("redemptionCode", redemptionCode);
         result.put("rewardName", reward.getName());
+        result.put("rewardType", reward.getType());
         result.put("productId", productId);
         result.put("productName", product.getName());
+        result.put("status", "success");
 
         return result;
+    }
+
+    @Override
+    public Map<String, Object> getRewardStatistics() throws Exception {
+        Map<String, Object> statistics = new HashMap<>();
+
+        // Get all rewards
+        List<Reward> allRewards = rewardRepository.findAll();
+
+        // Count active rewards
+        long activeRewardsCount = allRewards.stream()
+                .filter(Reward::getIsActive)
+                .count();
+
+        statistics.put("activeRewards", activeRewardsCount);
+
+        // Get all user rewards (redemptions)
+        List<UserReward> allUserRewards = userRewardRepository.findAll();
+
+        // Total redemptions
+        statistics.put("totalRedemptions", allUserRewards.size());
+
+        // Calculate total points spent on rewards
+        int totalPointsSpent = 0;
+        for (UserReward userReward : allUserRewards) {
+            totalPointsSpent += userReward.getReward().getPointsCost();
+        }
+        statistics.put("pointsSpent", totalPointsSpent);
+
+        // Create a map to count redemptions per reward
+        Map<Integer, Integer> redemptionCounts = new HashMap<>();
+
+        for (UserReward userReward : allUserRewards) {
+            Integer rewardId = userReward.getReward().getId();
+            redemptionCounts.put(rewardId, redemptionCounts.getOrDefault(rewardId, 0) + 1);
+        }
+
+        statistics.put("redemptionCounts", redemptionCounts);
+
+        // Find most popular reward (most redeemed)
+        if (!redemptionCounts.isEmpty()) {
+            Optional<Map.Entry<Integer, Integer>> mostPopularEntry = redemptionCounts.entrySet().stream()
+                    .max(Map.Entry.comparingByValue());
+
+            if (mostPopularEntry.isPresent()) {
+                Integer mostPopularRewardId = mostPopularEntry.get().getKey();
+                Optional<Reward> mostPopularReward = allRewards.stream()
+                        .filter(r -> r.getId().equals(mostPopularRewardId))
+                        .findFirst();
+
+                if (mostPopularReward.isPresent()) {
+                    statistics.put("mostPopularReward", mostPopularReward.get().getName());
+                } else {
+                    statistics.put("mostPopularReward", "Unknown");
+                }
+            } else {
+                statistics.put("mostPopularReward", "None");
+            }
+        } else {
+            statistics.put("mostPopularReward", "None");
+        }
+
+        return statistics;
+    }
+
+    @Override
+    @Transactional
+    public void deleteReward(Integer rewardId) throws Exception {
+        Reward reward = rewardRepository.findById(rewardId)
+                .orElseThrow(() -> new Exception("Reward not found"));
+
+        // Only allow deletion of inactive rewards to prevent issues with active redemptions
+        if (reward.getIsActive()) {
+            throw new Exception("Cannot delete an active reward. Please deactivate it first.");
+        }
+
+        // Check if this reward has been redeemed by any users
+        List<UserReward> userRewards = userRewardRepository.findByReward(reward);
+
+        // If users have redeemed this reward, mark as invalid (used)
+        for (UserReward userReward : userRewards) {
+            userReward.setIsUsed(true);
+            userRewardRepository.save(userReward);
+        }
+
+        // Finally, delete the reward
+        rewardRepository.delete(reward);
     }
 }

@@ -20,6 +20,9 @@ public interface RewardService {
     // Get all active rewards
     List<Reward> getActiveRewards();
 
+    // Get all rewards (active and inactive) - new method
+    List<Reward> getAllRewards();
+
     // Get rewards available to a user based on their points
     List<Reward> getAvailableRewardsForUser(Integer userId) throws Exception;
 
@@ -31,4 +34,10 @@ public interface RewardService {
 
     // Apply a user's reward to a product
     Map<String, Object> applyRewardToProduct(String redemptionCode, Integer productId) throws Exception;
+
+    // New method to get reward statistics for the admin dashboard
+    Map<String, Object> getRewardStatistics() throws Exception;
+
+    // New method to delete a reward permanently
+    void deleteReward(Integer rewardId) throws Exception;
 }

@@ -1,13 +1,10 @@
-// src/main/java/com/youbid/fyp/service/UserService.java
-// Add method for updating profile picture
-
 package com.youbid.fyp.service;
 
-import com.youbid.fyp.model.Product;
 import com.youbid.fyp.model.User;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     public User registerUser(User user);
@@ -17,4 +14,5 @@ public interface UserService {
     public List<User> searchUser(String query);
     public User findUserByJwt(String jwt);
     public User updateProfilePicture(Integer userId, MultipartFile file) throws Exception;
+    public Map<String, Object> getLoyaltyStatus(Integer userId) throws Exception;
 }

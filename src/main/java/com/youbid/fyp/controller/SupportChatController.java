@@ -7,6 +7,7 @@ import com.youbid.fyp.model.SupportChat;
 import com.youbid.fyp.model.SupportMessage;
 import com.youbid.fyp.model.User;
 import com.youbid.fyp.repository.SupportMessageRepository;
+import com.youbid.fyp.service.ActivityService;
 import com.youbid.fyp.service.SupportChatService;
 import com.youbid.fyp.service.SupportStaffService;
 import com.youbid.fyp.service.UserService;
@@ -37,6 +38,9 @@ public class SupportChatController {
 
     @Autowired
     private SupportMessageRepository supportMessageRepository;
+
+    @Autowired
+    private ActivityService activityService; // Add this at the class level
 
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'SUPPORT')")
@@ -173,6 +177,14 @@ public class SupportChatController {
             SupportChat supportChat = supportChatService.createSupportChat(currentUser.getId(), department, topic);
             SupportChatDTO chatDTO = convertToChatDTOSimple(supportChat);
 
+            // Track activity
+            activityService.trackSupportActivity(
+                    "New Support Ticket",
+                    String.format("%s %s created a support ticket about: %s",
+                            currentUser.getFirstname(), currentUser.getLastname(), topic),
+                    supportChat.getId()
+            );
+
             return new ResponseEntity<>(chatDTO, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -240,6 +252,17 @@ public class SupportChatController {
             SupportChat supportChat = supportChatService.assignSupportChat(chatId, supportStaffId);
             SupportChatDTO chatDTO = convertToChatDTOSimple(supportChat);
 
+            // Get support staff user
+            User supportAgent = supportChat.getSupportAgent();
+
+            // Track activity
+            activityService.trackSupportActivity(
+                    "Support Ticket Assigned",
+                    String.format("Support ticket #%d assigned to %s %s",
+                            chatId, supportAgent.getFirstname(), supportAgent.getLastname()),
+                    chatId
+            );
+
             return new ResponseEntity<>(chatDTO, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -263,6 +286,13 @@ public class SupportChatController {
 
             SupportChat supportChat = supportChatService.closeSupportChat(chatId);
             SupportChatDTO chatDTO = convertToChatDTOSimple(supportChat);
+
+            // Track activity
+            activityService.trackSupportActivity(
+                    "Support Ticket Resolved",
+                    String.format("Support ticket #%d about '%s' was resolved", chatId, chat.getTopic()),
+                    chatId
+            );
 
             return new ResponseEntity<>(chatDTO, HttpStatus.OK);
         } catch (Exception e) {
