@@ -285,6 +285,7 @@ public class BidServiceImplementation implements BidService {
                 .collect(Collectors.toList());
     }
 
+    // Add this method to your existing BidServiceImplementation
     @Override
     public List<Bid> getLostBidsByUser(Integer userId) throws Exception {
         User user = userRepository.findById(userId)

@@ -74,7 +74,7 @@ public class BidController {
         }
     }
 
-    // New endpoint to get user's lost bids
+    // Add this endpoint to your existing BidController
     @GetMapping("/lost")
     public ResponseEntity<?> getLostBids(@RequestHeader("Authorization") String jwt) {
         try {
@@ -102,21 +102,40 @@ public class BidController {
             bidInfo.put("bidId", bid.getId());
             bidInfo.put("bidAmount", bid.getAmount());
             bidInfo.put("bidTime", bid.getBidPlaceTime());
-            bidInfo.put("productId", product.getId());
-            bidInfo.put("productName", product.getName());
-            bidInfo.put("productStatus", product.getStatus());
-            bidInfo.put("productCategory", product.getCategory());
-            bidInfo.put("highestBid", product.getHighestBid());
-            bidInfo.put("isHighestBidder",
-                    product.getHighestBidder() != null &&
-                            product.getHighestBidder().getId().equals(bid.getBidder().getId()));
+            bidInfo.put("amount", bid.getAmount());
 
-            // Add auction deadline if it exists
-            if (product.getAuctionDeadline() != null) {
-                bidInfo.put("auctionDeadline", product.getAuctionDeadline());
-                bidInfo.put("isAuctionEnded", product.getAuctionDeadline().isBefore(LocalDateTime.now()));
-            } else {
-                bidInfo.put("isAuctionEnded", false);
+            if (product != null) {
+                bidInfo.put("productId", product.getId());
+                bidInfo.put("productName", product.getName());
+                bidInfo.put("productStatus", product.getStatus());
+                bidInfo.put("productCategory", product.getCategory());
+                bidInfo.put("productImages", product.getImages());
+                bidInfo.put("productDescription", product.getDescription());
+                bidInfo.put("highestBid", product.getHighestBid());
+                bidInfo.put("isHighestBidder",
+                        product.getHighestBidder() != null &&
+                                product.getHighestBidder().getId().equals(bid.getBidder().getId()));
+
+                // Add auction deadline if it exists
+                if (product.getAuctionDeadline() != null) {
+                    bidInfo.put("auctionDeadline", product.getAuctionDeadline());
+                    bidInfo.put("isAuctionEnded", product.getAuctionDeadline().isBefore(LocalDateTime.now()));
+                } else {
+                    bidInfo.put("isAuctionEnded", false);
+                }
+
+                // Create a product object with all necessary properties
+                Map<String, Object> productMap = new HashMap<>();
+                productMap.put("id", product.getId());
+                productMap.put("name", product.getName());
+                productMap.put("status", product.getStatus());
+                productMap.put("category", product.getCategory());
+                productMap.put("images", product.getImages());
+                productMap.put("description", product.getDescription());
+                productMap.put("highestBid", product.getHighestBid());
+                productMap.put("auctionDeadline", product.getAuctionDeadline());
+
+                bidInfo.put("product", productMap);
             }
 
             formattedBids.add(bidInfo);

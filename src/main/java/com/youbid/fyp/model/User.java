@@ -193,3 +193,5 @@ public class User {
 
     public void setWonItems(List<Product> wonItems) {this.wonItems = wonItems;}
 }
+
+
